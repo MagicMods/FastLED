@@ -236,6 +236,11 @@ class WS2811 : public WS2811Controller800Khz<DATA_PIN, RGB_ORDER> {};
 template<uint8_t DATA_PIN, EOrder RGB_ORDER>
 class WS2813 : public WS2813Controller<DATA_PIN, RGB_ORDER> {};
 
+/// @brief WS2818F controller class.
+/// @copydetails WS2818FController
+template<uint8_t DATA_PIN, EOrder RGB_ORDER>
+class WS2818F : public WS2818FController<DATA_PIN, RGB_ORDER> {};
+
 /// @brief APA104 controller class.
 /// @copydetails WS2811Controller800Khz
 template<uint8_t DATA_PIN, EOrder RGB_ORDER>
