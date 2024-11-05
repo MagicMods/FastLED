@@ -8,8 +8,6 @@
 
 FASTLED_NAMESPACE_BEGIN
 
-#pragma GCC push_options
-#pragma GCC optimize("Os")
 
 enum RGBW_MODE {
     kRGBWInvalid,
@@ -56,6 +54,17 @@ struct RgbwDefault : public Rgbw {
     }
     static Rgbw value() {
         RgbwDefault _default;
+        return _default;
+    }
+};
+
+struct RgbwWhiteIsOff : public Rgbw {
+    RgbwWhiteIsOff() {
+        white_color_temp = kRGBWDefaultColorTemp;
+        rgbw_mode = kRGBWNullWhitePixel;
+    }
+    static Rgbw value() {
+        RgbwWhiteIsOff _default;
         return _default;
     }
 };
@@ -169,6 +178,5 @@ void rgbw_partial_reorder(EOrderW w_placement, uint8_t b0, uint8_t b1,
                           uint8_t b2, uint8_t w, uint8_t *out_b0,
                           uint8_t *out_b1, uint8_t *out_b2, uint8_t *out_b3);
 
-#pragma GCC pop_options
 
 FASTLED_NAMESPACE_END

@@ -2,14 +2,27 @@ FastLED
 ===========
 [![arduino-library-badge](https://www.ardu-badge.com/badge/FastLED.svg)](https://www.ardu-badge.com/FastLED)
 [![build status](https://github.com/FastLED/FastLED/workflows/build/badge.svg)](https://github.com/FastLED/FastLED/actions/workflows/build.yml)
+[![unit tests](https://github.com/FastLED/FastLED/actions/workflows/build_unit_test.yml/badge.svg)](https://github.com/FastLED/FastLED/actions/workflows/build_unit_test.yml)
 [![Arduino Library Lint](https://github.com/FastLED/FastLED/actions/workflows/arduino_library_lint.yml/badge.svg)](https://github.com/FastLED/FastLED/actions/workflows/arduino_library_lint.yml)
 [![Documentation](https://img.shields.io/badge/Docs-Doxygen-blue.svg)](http://fastled.io/docs)
 [![Reddit](https://img.shields.io/badge/reddit-/r/FastLED-orange.svg?logo=reddit)](https://www.reddit.com/r/FastLED/)
 
 
+<a href="https://star-history.com/#fastled/fastled&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=fastled/fastled&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=fastled/fastled&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=fastled/fastled&type=Date" />
+ </picture>
+</a>
 
 
 ## About
+
+The led driver for tiny computers the size of a quarter, more or less.
+
+esp32, teensy, arduino,
+raspberri pi, attiny family and more.
 
 This is a library for easily & efficiently controlling a wide variety of LED chipsets, like the ones
 sold by Adafruit (NeoPixel, DotStar, LPD8806), Sparkfun (WS2801), and AliExpress.  In addition to writing to the
@@ -25,10 +38,10 @@ We have multiple goals with this library:
 
 ## Example
 
-Examples [link](examples)
-
 *This is an Arduino Sketch that will run on Arduino Uno/Esp32/Raspberri Pi*
 ```C++
+// New feature! Overclocking WS2812
+// #define FASTLED_OVERCLOCK 1.2 // 20% overclock ~ 960 khz.
 #include <FastLED.h>
 #define NUM_LEDS 60
 #define DATA_PIN 6
@@ -40,11 +53,34 @@ void loop() {
 }
 ```
 
+For more examples see this [link](examples).
+
+
+
+
+
 
 ## Supported Platforms
 #### Arduino
 
 [![uno](https://github.com/FastLED/FastLED/actions/workflows/build_uno.yml/badge.svg)](https://github.com/FastLED/FastLED/actions/workflows/build_uno.yml)
+
+
+[![attiny13](https://github.com/FastLED/FastLED/actions/workflows/build_attiny13.yml/badge.svg)](https://github.com/FastLED/FastLED/actions/workflows/build_attiny13.yml)
+*needs pin definitions for this board*
+
+
+[![attiny85](https://github.com/FastLED/FastLED/actions/workflows/build_attiny85.yml/badge.svg)](https://github.com/FastLED/FastLED/actions/workflows/build_attiny85.yml)
+
+
+[![attiny1604](https://github.com/FastLED/FastLED/actions/workflows/build_attiny1604.yml/badge.svg)](https://github.com/FastLED/FastLED/actions/workflows/build_attiny1604.yml)
+
+
+[![attiny1616](https://github.com/FastLED/FastLED/actions/workflows/build_attiny1616.yml/badge.svg)](https://github.com/FastLED/FastLED/actions/workflows/build_attiny1616.yml)
+
+
+[![attiny4313](https://github.com/FastLED/FastLED/actions/workflows/build_attiny4313.yml/badge.svg)](https://github.com/FastLED/FastLED/actions/workflows/build_attiny4313.yml)
+*needs pin definitions for this board*
 
 
 [![yun](https://github.com/FastLED/FastLED/actions/workflows/build_yun.yml/badge.svg)](https://github.com/FastLED/FastLED/actions/workflows/build_yun.yml)
@@ -57,7 +93,7 @@ void loop() {
 
 
 [![nano_every](https://github.com/FastLED/FastLED/actions/workflows/build_nano_every.yml/badge.svg)](https://github.com/FastLED/FastLED/actions/workflows/build_nano_every.yml)
-This used to work, but an atmel update broke the pins. See issue https://github.com/FastLED/FastLED/issues/716
+
 
 #### Teensy
 [![teensy30](https://github.com/FastLED/FastLED/actions/workflows/build_teensy30.yml/badge.svg)](https://github.com/FastLED/FastLED/actions/workflows/build_teensy30.yml)
@@ -82,7 +118,18 @@ This used to work, but an atmel update broke the pins. See issue https://github.
 
 [![nrf52840_sense](https://github.com/FastLED/FastLED/actions/workflows/build_adafruit_feather_nrf52840_sense.yml/badge.svg)](https://github.com/FastLED/FastLED/actions/workflows/build_adafruit_feather_nrf52840_sense.yml)
 
+[![nordicnrf52_dk](https://github.com/FastLED/FastLED/actions/workflows/build_nrf52840_dk.yml/badge.svg)](https://github.com/FastLED/FastLED/actions/workflows/build_nrf52840_dk.yml)
+
 [![adafruit_xiaoblesense](https://github.com/FastLED/FastLED/actions/workflows/build_adafruit_xiaoblesense.yml/badge.svg)](https://github.com/FastLED/FastLED/actions/workflows/build_adafruit_xiaoblesense.yml)
+
+#### STM
+
+[![bluepill](https://github.com/FastLED/FastLED/actions/workflows/build_bluepill.yml/badge.svg)](https://github.com/FastLED/FastLED/actions/workflows/build_bluepill.yml)
+
+[![maple_mini](https://github.com/FastLED/FastLED/actions/workflows/build_maple_map.yml/badge.svg)](https://github.com/FastLED/FastLED/actions/workflows/build_maple_map.yml)
+
+[![stm103tb](https://github.com/FastLED/FastLED/actions/workflows/build_stm103tb.yml/badge.svg)](https://github.com/FastLED/FastLED/actions/workflows/build_stm103tb.yml)
+(PlatformIO doesn't support this board yet and we don't know what the build info is to support this is yet)
 
 #### Raspberry Pi
 
@@ -104,6 +151,7 @@ This used to work, but an atmel update broke the pins. See issue https://github.
 
 
 [![esp32c2](https://github.com/FastLED/FastLED/actions/workflows/build_esp32c2.yml/badge.svg)](https://github.com/FastLED/FastLED/actions/workflows/build_esp32c2.yml)
+*might work with alternative settings, missing RMT device*
 
 
 [![esp32c3](https://github.com/FastLED/FastLED/actions/workflows/build_esp32c3.yml/badge.svg)](https://github.com/FastLED/FastLED/actions/workflows/build_esp32c3.yml)
@@ -119,18 +167,27 @@ This used to work, but an atmel update broke the pins. See issue https://github.
 
 *Specific features*
 
-[![esp32rmt_51](https://github.com/FastLED/FastLED/actions/workflows/build_esp32rmt.yml/badge.svg)](https://github.com/FastLED/FastLED/actions/workflows/build_esp32rmt.yml) (in progress)
-
+[![esp32rmt_51](https://github.com/FastLED/FastLED/actions/workflows/build_esp32rmt.yml/badge.svg)](https://github.com/FastLED/FastLED/actions/workflows/build_esp32rmt.yml)
 
 [![esp32_i2s_ws2812](https://github.com/FastLED/FastLED/actions/workflows/build_esp32_i2s_ws2812.yml/badge.svg)](https://github.com/FastLED/FastLED/actions/workflows/build_esp32_i2s_ws2812.yml)
 
+[![esp32 extra libs](https://github.com/FastLED/FastLED/actions/workflows/build_esp_extra_libs.yml/badge.svg)](https://github.com/FastLED/FastLED/actions/workflows/build_esp_extra_libs.yml)
 
-## x86
+Espressif's current evaluation of FastLED's compatibility with their product sheet can be found [here](https://github.com/espressif/arduino-esp32/blob/gh-pages/LIBRARIES_TEST.md)
+
+
+### x86
 
 [![linux_native](https://github.com/FastLED/FastLED/actions/workflows/build_linux.yml/badge.svg)](https://github.com/FastLED/FastLED/actions/workflows/build_linux.yml)
 
+### Wasm
+
+[![wasm](https://github.com/FastLED/FastLED/actions/workflows/build_wasm.yml/badge.svg)](https://github.com/FastLED/FastLED/actions/workflows/build_wasm.yml)
+
 
 ## Compiled Library Size Check
+
+[![attiny85_binary_size](https://github.com/FastLED/FastLED/actions/workflows/check_attiny85.yml/badge.svg)](https://github.com/FastLED/FastLED/actions/workflows/check_attiny85.yml)
 
 [![uno_binary_size](https://github.com/FastLED/FastLED/actions/workflows/check_uno_size.yml/badge.svg)](https://github.com/FastLED/FastLED/actions/workflows/check_uno_size.yml)
 
@@ -139,6 +196,15 @@ This used to work, but an atmel update broke the pins. See issue https://github.
 
 
 [![teensy41_binary_size](https://github.com/FastLED/FastLED/actions/workflows/check_teensy41_size.yml/badge.svg)](https://github.com/FastLED/FastLED/actions/workflows/check_teensy41_size.yml)
+
+
+
+## New in 3.9.2!
+![image](https://github.com/user-attachments/assets/be98fbe6-0ec7-492d-8ed1-b7eb6c627e86)
+
+## Star History
+
+
 
 
 ## Getting Started
@@ -182,15 +248,30 @@ When changes are made then push to your fork to your repo and git will give you 
 
 ```bash
 Available boards:
-[0]: uno
-[1]: esp32dev
-[2]: esp01
-[3]: esp32-c3-devkitm-1
-[4]: esp32-s3-devkitc-1
-[5]: yun
-[6]: digix
-[7]: teensy30
-[8]: teensy41
+[0]: ATtiny1616
+[1]: adafruit_feather_nrf52840_sense
+[2]: attiny85
+[3]: bluepill
+[4]: digix
+[5]: esp01
+[6]: esp32-c2-devkitm-1
+[7]: esp32-c3-devkitm-1
+[8]: esp32-c6-devkitc-1
+[9]: esp32-s3-devkitc-1
+[10]: esp32dev
+[11]: esp32dev_i2s
+[12]: esp32dev_idf44
+[13]: esp32rmt_51
+[14]: nano_every
+[15]: rpipico
+[16]: rpipico2
+[17]: teensy30
+[18]: teensy41
+[19]: uno
+[20]: uno_r4_wifi
+[21]: xiaoblesense_adafruit
+[22]: yun
+[all]: All boards
 Enter the number of the board you want to use: 0
 ```
 
@@ -226,21 +307,76 @@ HL1606, and "595"-style shift registers are no longer supported by the library. 
 
 ## Supported Platforms
 
-Right now the library is supported on a variety of Arduino compatible platforms.  If it's ARM or AVR and uses the Arduino software (or a modified version of it to build) then it is likely supported.  Note that we have a long list of upcoming platforms to support, so if you don't see what you're looking for here, ask, it may be on the roadmap (or may already be supported).  N.B. at the moment we are only supporting the stock compilers that ship with the Arduino software.  Support for upgraded compilers, as well as using AVR Studio and skipping the Arduino entirely, should be coming in a near future release.
+Right now the library is supported on a variety of arduino compatible platforms.  If it's ARM or AVR and uses the arduino software (or a modified version of it to build) then it is likely supported.  Note that we have a long list of upcoming platforms to support, so if you don't see what you're looking for here, ask, it may be on the roadmap (or may already be supported).  N.B. at the moment we are only supporting the stock compilers that ship with the arduino software.  Support for upgraded compilers, as well as using AVR studio and skipping the arduino entirely, should be coming in a near future release.
 
-* Arduino & compatibles - straight up Arduino devices, Uno, Duo, Leonardo, Mega, Nano, etc...
-* Arduino Yún
 * Adafruit Trinket & Gemma - Trinket Pro may be supported, but haven't tested to confirm yet
-* Teensy 2, Teensy++ 2, Teensy 3.0, Teensy 3.1/3.2, Teensy LC, Teensy 3.5, Teensy 3.6, and Teensy 4.0 - Arduino compatible from pjrc.com with some extra goodies (note the Teensy LC, 3.2, 3.5, 3.6, 4.0 are ARM, not AVR!)
+* Arduino & compatibles - straight up Arduino devices, Uno, Duo, Leonardo, Mega, Nano, etc...
 * Arduino Due and the digistump DigiX
+* Arduino Yún
+* Arduino Zero
+* AVR microcontrollers - ATtiny, ATmega and more families
+* ESP32 based boards
+* ESP8266 using the Arduino board definitions from http://arduino.esp8266.com/stable/package_esp8266com_index.json - please be sure to also read https://github.com/FastLED/FastLED/wiki/ESP8266-notes for information specific to the 8266.
+* Teensy 2, Teensy++ 2, Teensy 3.0, Teensy 3.1/3.2, Teensy LC, Teensy 3.5, Teensy 3.6, and Teensy 4.0 - arduino compatible from pjrc.com with some extra goodies (note the teensy LC, 3.2, 3.5, 3.6, 4.0 are ARM, not AVR!)
 * RFDuino
 * SparkCore
-* Arduino Zero
-* ESP8266 using the Arduino board definitions from http://arduino.esp8266.com/stable/package_esp8266com_index.json - please be sure to also read https://github.com/FastLED/FastLED/wiki/ESP8266-notes for information specific to the 8266.
 * The wino board - http://wino-board.com
-* ESP32 based boards
 
 What types of platforms are we thinking about supporting in the future?  Here's a short list:  ChipKit32, Maple, Beagleboard
+
+# Special Notes on APA102 and the 'High Definition' Mode in FastLED
+
+The APA102 LED driver includes a 5-bit per-LED brightness component. Previously, this feature was not fully utilized, except through a workaround that defined a global brightness affecting all LEDs uniformly rather than individually.
+
+In FastLED the APA102 chipset will have extra resolution in comparison to the WS2812 RGB8 mode.
+
+There are two modes:
+  * APA102 "Regular Mode"
+    * Has enhanced color resolution when using the "global brightness" factor
+  * APA102HD Mode
+    * Applies automatic gamma correction at the driver level using "pseudo 13-bit" color mixing.
+
+**APA102HD Mode**
+
+[example: examples/APA102HD](examples/Apa102HD/)
+
+By introducing a 5-bit gamma bit-shift algorithm, we now effectively leverage this per-LED brightness control. Faced with the decision to either rewrite the entire `CRGB` library to expose the 5-bit brightness—including adaptations for formats like RGBW—or to retain the existing RGB8 format used by FastLED and implement the enhancement at the driver level, the latter option was chosen. This approach avoids widespread changes and maintains compatibility; if RGB8 suffices for game development, it is adequate for LED development as well.
+
+The term "Pseudo-13-bit" arises because the additional resolution becomes significant only when all color components are at low values. For example, colors like `CRGB(255, 255, 254)` or `CRGB(255, 1, 1)` do not benefit from increased resolution due to the dominance of the brighter components. However, in low-light conditions with colors such as `CRGB(8, 8, 8)`, where the maximum component value is low, the pseudo-13-bit algorithm significantly enhances resolution—precisely where increased resolution is most desired.
+
+Gamma correction is applied to preserve the RGB8 format and because future LEDs are expected to support gamma correction inherently. In game development, the 0-255 color values are based on the gamma scale rather than the linear power scale. LEDs like the WS2812 operate on a linear power scale, which results in washed-out, undersaturated colors when displaying captured video directly. Implementing software gamma correction for RGB8 severely reduces color resolution.
+
+To address this, an internal gamma scale mapping is applied:
+
+```
+RGB8 → RGB16 + 5-bit gamma → RGB8 + 5-bit gamma
+```
+
+During the conversion back to RGB8, the brightness from the 5-bit gamma is bit-shifted into the RGB components. Each time the 5-bit brightness is shifted right, the RGB components are shifted left. For example:
+
+Starting with `RGB(4, 4, 4)` and a 5-bit brightness value of 31:
+
+- Shift RGB components left, shift 5-bit brightness right:
+  - `RGB(8, 8, 8)`, brightness 15
+  - `RGB(16, 16, 16)`, brightness 7
+  - `RGB(32, 32, 32)`, brightness 3
+  - `RGB(64, 64, 64)`, brightness 1 (final state)
+
+This simplified illustration omits that the actual processing occurs in 16-bit space rather than 8-bit, but the fundamental concept remains the same.
+
+By truncating the gamma-corrected RGB16 values back to RGB8, the LEDs receive pre-boosted RGB components and pre-dimmed 5-bit brightness values. This method preserves minor color details over a greater range, offering a valuable trade-off and leading to the designation of this mode as "APA102HD."
+
+In version 3.9.0, the algorithm was completely rewritten to function natively on 8-bit controllers like the `__AVR__` chipsets without significant performance loss. Previously, accumulating the numerator and denominator during the brightness bit-shifting process introduced extra bits that were ultimately truncated. Testing revealed that equivalent resolution could be achieved using straightforward bit-shifting, which also significantly reduced code size on AVR platforms with the new algorithm.
+
+**Further Enhancements in Version 3.9.0**
+
+Additionally, version 3.9.0 separated the color temperature from the global brightness scale. Before this update, global brightness was pre-mixed with the component scales—a method suitable for the WS2812's RGB8 format but not for the APA102's RGB8 plus 5-bit brightness. The update saw the global brightness and color scales separated for non-AVR chipsets. While the WS2812 continues to use pre-mixed values for performance reasons on AVR chipsets, the APA102 now performs component mixing within the "pseudo-13-bit space."
+
+Although APA102HD mode offers the highest dynamic range, the standard APA102 mode also benefits from increased resolution when adjusting global brightness. In this mode, instead of pre-mixing scales and multiplying them against each `CRGB` value, the global brightness is applied to the 5-bit brightness component, and only the color scales are multiplied against the `CRGB` values. This approach is superior because each component of the color scale typically exceeds 127, providing ample high-order bits to preserve color information.
+
+**Conclusion**
+
+I hope this explanation clarifies the enhancements and the rationale behind these implementation choices. If you have any questions or require further clarification, please do not hesitate to ask.
 
 ### Porting FastLED to a new platform
 

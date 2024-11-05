@@ -8,7 +8,6 @@ on:
         required: false
         default: ""
 
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -31,13 +30,23 @@ jobs:
       #    restore-keys: |
       #      ${{ runner.os }}-build-
 
-      - name: Build FastLED examples
+      - name: Install UV
+        run: pip install uv
+
+      - name: Build FastLED examples with "./compile --no-interactive  ${{ inputs.args }}"
         run: |
           set -o pipefail
           ./compile --no-interactive  ${{ inputs.args }} | tee build.log
         shell: bash
 
+      - name: Build Blink.ino for library info
+        continue-on-error: true
+        run: |
+          uv run ci/ci-compile.py ${{ inputs.args }} --examples Blink
+        shell: bash
+
       - name: Print out build_info.json
+        if: always()
         run: |
           build_info=$(find . -name build_info.json)
           if [ -f "$build_info" ]; then
@@ -45,7 +54,33 @@ jobs:
           else
             echo "build_info.json not found"
           fi
+
+      - name: CPP Check
+        run: |
+          uv run ci/ci-cppcheck.py
+
+      - name: Check Compiled size of last compiled example
+        continue-on-error: true
+        run: |
+          uv run ci/ci-check-compiled-size.py ${{ inputs.args }} --no-build
+
+      - name: Inspect Binary
         if: always()
+        continue-on-error: true
+        run: |
+          uv run ci/inspect_binary.py --first
+
+      - name: Inspect Elf
+        if: always()
+        continue-on-error: true
+        run: |
+          uv run ci/inspect_elf.py --first
+
+      - name: Optimization Report
+        if: always()
+        continue-on-error: true
+        run: |
+          uv run ci/optimization_report.py --first
 
       - name: Generate timestamp and random hex
         id: generate_id

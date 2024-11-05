@@ -2,7 +2,10 @@
 #ifdef ESP32
 #ifndef FASTLED_ESP32_I2S
 
-#if FASTLED_ESP32_COMPONENT_LED_STRIP_BUILT_IN!=1
+
+#include "led_strip/enabled.h"
+
+#if !FASTLED_RMT5
 
 #define FASTLED_INTERNAL
 
@@ -37,11 +40,6 @@ void RmtController::initPulseBuffer(int size_in_bytes) {
 }
 
 void RmtController::showPixels(PixelIterator &pixels) {
-    Rgbw rgbw = pixels.get_rgbw();
-    if (rgbw.active()) {
-        pixels.set_rgbw(rgbw);
-    }
-
     if (built_in_driver()) {
         loadAllPixelsToRmtSymbolData(pixels);
     } else {
@@ -107,7 +105,7 @@ void RmtController::loadPixelDataForStreamEncoding(PixelIterator &pixels) {
     }
 }
 
-#endif // FASTLED_ESP32_COMPONENT_LED_STRIP_BUILT_IN
+#endif // FASTLED_RMT5
 
 #endif // ! FASTLED_ESP32_I2S
 

@@ -20,7 +20,6 @@ Thumbs.db
 .piolibdeps/
 .platformio/
 .vscode/extensions.json
-.vscode/launch.json
 .vscode/c_cpp_properties.json
 .aider*
 !.aider.conf.yml
@@ -38,3 +37,12 @@ __pycache__
 **/.ruff_cache/
 dev/dev.ino.cpp
 ci/tmp/
+ci/tests/output
+
+# sometimes appears on windows during test compilation
+ci/-
+**/fastled_js
+dist
+
+ignore/
+.env
