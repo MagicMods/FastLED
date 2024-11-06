@@ -942,7 +942,8 @@ class WS2813Controller : public ClocklessController<DATA_PIN, C_NS_WS2813(320), 
 
 // WS2818F - 300ns, 790ns, 490ns
 template <uint8_t DATA_PIN, EOrder RGB_ORDER = GRB>
-class WS2818Controller : public ClocklessController<DATA_PIN, C_NS_WS2818(300), C_NS_WS2818(790), C_NS_WS2818(490), RGB_ORDER> {};
+// class WS2818Controller : public ClocklessController<DATA_PIN, C_NS_WS2818(300), C_NS_WS2818(790), C_NS_WS2818(490), RGB_ORDER> {};
+class WS2818Controller : public ClocklessController<DATA_PIN, C_NS_WS2818(220), C_NS_WS2818(580), C_NS_WS2818(360), RGB_ORDER> {};
 
 // WS2812 - 250ns, 625ns, 375ns
 template <uint8_t DATA_PIN, EOrder RGB_ORDER = GRB>
