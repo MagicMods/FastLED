@@ -5,13 +5,14 @@
 #include "namespace.h"
 
 #include "platforms/wasm/js.h"
-#include "json.h"
+#include "fl/json.h"
 #include "ui_manager.h"
 
+using namespace fl;
 
 FASTLED_NAMESPACE_BEGIN
 
-jsCheckbox::jsCheckbox(const char* name, bool value)
+jsCheckbox::jsCheckbox(const Str& name, bool value)
     : mValue(value) {
     auto updateFunc = jsUiInternal::UpdateFunction(this, [](void* self, const FLArduinoJson::JsonVariantConst& json) {
         static_cast<jsCheckbox*>(self)->updateInternal(json);
@@ -19,8 +20,8 @@ jsCheckbox::jsCheckbox(const char* name, bool value)
     auto toJsonFunc = jsUiInternal::ToJsonFunction(this, [](void* self, FLArduinoJson::JsonObject& json) {
         static_cast<jsCheckbox*>(self)->toJson(json);
     });
-    //mInternal = jsUiInternalRef::New(name, std::move(updateFunc), std::move(toJsonFunc));
-    mInternal = jsUiInternalRef::New(name, std::move(updateFunc), std::move(toJsonFunc));
+    //mInternal = jsUiInternalPtr::New(name, std::move(updateFunc), std::move(toJsonFunc));
+    mInternal = jsUiInternalPtr::New(name, std::move(updateFunc), std::move(toJsonFunc));
     jsUiManager::addComponent(mInternal);
 }
 
@@ -28,7 +29,7 @@ jsCheckbox::~jsCheckbox() {
     jsUiManager::removeComponent(mInternal);
 }
 
-const char* jsCheckbox::name() const {
+const Str& jsCheckbox::name() const {
     return mInternal->name();
 }
 

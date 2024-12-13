@@ -16,13 +16,13 @@
 /// * 1 digit for the major version
 /// * 3 digits for the minor version
 /// * 3 digits for the patch version
-#define FASTLED_VERSION 3009002
+#define FASTLED_VERSION 3009004
 #ifndef FASTLED_INTERNAL
 #  ifdef  FASTLED_SHOW_VERSION
 #    ifdef FASTLED_HAS_PRAGMA_MESSAGE
-#      pragma message "FastLED version 3.009.002"
+#      pragma message "FastLED version 3.009.004"
 #    else
-#      warning FastLED version 3.009.002  (Not really a warning, just telling you here.)
+#      warning FastLED version 3.009.004  (Not really a warning, just telling you here.)
 #    endif
 #  endif
 #endif
@@ -52,7 +52,7 @@
 
 
 
-#include "force_inline.h"
+#include "fl/force_inline.h"
 #include "cpp_compat.h"
 
 #include "fastled_config.h"
@@ -82,12 +82,15 @@
 
 #include "fastspi.h"
 #include "chipsets.h"
-#include "engine_events.h"
+#include "fl/engine_events.h"
+
+using namespace fl;
 
 FASTLED_NAMESPACE_BEGIN
 
-
-
+// Backdoor to get the size of the CLedController object. The one place
+// that includes this just uses extern to declare the function.
+uint16_t cled_contoller_size();
 
 /// LED chipsets with SPI interface
 enum ESPIChipsets {
@@ -373,8 +376,8 @@ public:
 
 	// Useful when you want to know when an event like onFrameBegin or onFrameEnd is happening.
 	// This is disabled on AVR to save space.
-	void addListener(EngineEvents::Listener *listener) { EngineEvents::addListener(listener); }
-	void removeListener(EngineEvents::Listener *listener) { EngineEvents::removeListener(listener); }
+	void addListener(fl::EngineEvents::Listener *listener) { fl::EngineEvents::addListener(listener); }
+	void removeListener(fl::EngineEvents::Listener *listener) { fl::EngineEvents::removeListener(listener); }
 
 	/// Add a CLEDController instance to the world.  Exposed to the public to allow people to implement their own
 	/// CLEDController objects or instances.  There are two ways to call this method (as well as the other addLeds()
@@ -823,11 +826,11 @@ public:
 
 	/// Get the number of leds in the first controller
 	/// @returns the number of LEDs in the first controller
-	int size() { return (*this)[0].size(); }
+	int size();
 
 	/// Get a pointer to led data for the first controller
 	/// @returns pointer to the CRGB buffer for the first controller
-	CRGB *leds() { return (*this)[0].leds(); }
+	CRGB *leds();
 };
 
 /// Alias of the FastLED instance for legacy purposes

@@ -4,10 +4,26 @@ import platform
 import subprocess
 import sys
 import time
+from enum import Enum
 from pathlib import Path
 from typing import List
 
 from ci.paths import PROJECT_ROOT
+
+
+class BuildMode(Enum):
+    DEBUG = "DEBUG"
+    QUICK = "QUICK"
+    RELEASE = "RELEASE"
+
+    @classmethod
+    def from_string(cls, mode_str: str) -> "BuildMode":
+        try:
+            return cls[mode_str.upper()]
+        except KeyError:
+            valid_modes = [mode.name for mode in cls]
+            raise ValueError(f"BUILD_MODE must be one of {valid_modes}, got {mode_str}")
+
 
 machine = platform.machine().lower()
 IS_ARM: bool = "arm" in machine or "aarch64" in machine
@@ -133,7 +149,7 @@ def clean() -> None:
     remove_dangling_images()
 
 
-def build_image(debug: bool = True) -> None:
+def build_image() -> None:
     print()
     print("#######################################")
     print("# Building Docker image...")
@@ -146,8 +162,7 @@ def build_image(debug: bool = True) -> None:
             "-t",
             IMAGE_NAME,
         ]
-        if debug:
-            cmd_list.extend(["--build-arg", "DEBUG=1"])
+        cmd_list.extend(["--build-arg", "NO_PREWARM=1"])
         if IS_ARM:
             cmd_list.extend(["--build-arg", f"PLATFORM_TAG={PLATFORM_TAG}"])
         cmd_list.extend(
@@ -174,8 +189,18 @@ def is_tty() -> bool:
     return sys.stdout.isatty()
 
 
+def get_build_mode(args: argparse.Namespace) -> BuildMode:
+    if args.debug:
+        return BuildMode.DEBUG
+    elif args.release:
+        return BuildMode.RELEASE
+    elif args.quick:
+        return BuildMode.QUICK
+    return BuildMode.QUICK  # Default to QUICK if no mode specified
+
+
 def run_container(
-    directory: str, interactive: bool, debug: bool = False, server: bool = False
+    directory: str, interactive: bool, build_mode: BuildMode, server: bool = False
 ) -> None:
 
     absolute_directory: str = os.path.abspath(directory)
@@ -196,15 +221,25 @@ def run_container(
             IMAGE_NAME,
             "-v",
             f"{absolute_directory}:/mapped/{base_name}",
+            "-v",
+            f"{PROJECT_ROOT/'src'}:/host/fastled/src",
         ]
         if server:
             # add the port mapping before the image name is added.
+            auth_token = _get_auth_token()
+            print(f"Using auth token: {auth_token}")
             docker_command.extend(["-p", "80:80"])
         docker_command.append(IMAGE_NAME)
-        if server:
+        if server and not interactive:
             docker_command.extend(["python", "/js/run.py", "server"])
-        elif debug and not interactive:
-            docker_command.extend(["python", "/js/run.py", "compile", "--debug"])
+        elif not interactive:
+            docker_command.extend(["python", "/js/run.py", "compile"])
+            if build_mode == BuildMode.DEBUG:
+                docker_command.extend(["--debug"])
+            elif build_mode == BuildMode.RELEASE:
+                docker_command.extend(["--release"])
+            elif build_mode == BuildMode.QUICK:
+                docker_command.extend(["--quick"])
         if is_tty():
             docker_command.insert(4, "-it")
         if interactive:
@@ -252,7 +287,17 @@ def run_web_server(directory: str) -> None:
         time.sleep(1)
 
 
-def main():
+def _get_auth_token() -> str:
+    """Grep the _AUTH_TOKEN from server.py"""
+    server_py = PROJECT_ROOT / "src" / "platforms" / "wasm" / "compiler" / "server.py"
+    with open(server_py, "r") as f:
+        for line in f:
+            if "_AUTH_TOKEN" in line:
+                return line.split('"')[1].strip()
+    raise WASMCompileError("Could not find _AUTH_TOKEN in server.py")
+
+
+def main() -> None:
     parser: argparse.ArgumentParser = argparse.ArgumentParser(
         description="WASM Compiler for FastLED"
     )
@@ -292,14 +337,26 @@ def main():
         help="Launch a web server and open a browser after compilation",
     )
     parser.add_argument(
-        "--no-open",
+        "--just-compile",
         action="store_true",
         help="Skip launching a web server and opening a browser",
     )
-    parser.add_argument(
+    # Build mode group (mutually exclusive)
+    build_mode_group = parser.add_mutually_exclusive_group()
+    build_mode_group.add_argument(
         "--debug",
         action="store_true",
-        help="Enables debug flags and disables optimization. Results in larger binary with debug info.",
+        help="Build in debug mode - larger binary with debug info",
+    )
+    build_mode_group.add_argument(
+        "--quick",
+        action="store_true",
+        help="Build in quick mode - faster compilation (default)",
+    )
+    build_mode_group.add_argument(
+        "--release",
+        action="store_true",
+        help="Build in release mode - optimized for size and speed",
     )
     parser.add_argument(
         "--server",
@@ -310,7 +367,7 @@ def main():
 
     if args.no_build:
         args.build = False
-    if args.no_open:
+    if args.just_compile:
         args.open = False
 
     try:
@@ -319,14 +376,16 @@ def main():
             return
         if args.directory is None:
             parser.error("ERROR: directory is required unless --clean is specified")
-        debug_mode = args.debug
+        selected_build_mode = get_build_mode(args)
         if args.build or not image_exists():
             # Check for and remove existing container before building
             remove_existing_container(IMAGE_NAME)
-            build_image(debug_mode)
+            build_image()
             remove_dangling_images()
 
-        run_container(args.directory, args.interactive, debug_mode, args.server)
+        run_container(
+            args.directory, args.interactive, selected_build_mode, args.server
+        )
         if args.server:
             return
 

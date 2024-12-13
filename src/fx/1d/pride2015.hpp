@@ -4,7 +4,7 @@
 #include "fx/fx1d.h"
 #include "namespace.h"
 
-FASTLED_NAMESPACE_BEGIN
+namespace fl {
 
 
 
@@ -16,15 +16,14 @@ FASTLED_NAMESPACE_BEGIN
 // Animated, ever-changing rainbows.
 // by Mark Kriegsman
 
-FASTLED_SMART_REF(Pride2015);
+FASTLED_SMART_PTR(Pride2015);
 
-class Pride2015 : public FxStrip {
+class Pride2015 : public Fx1d {
   public:
-    Pride2015(uint16_t num_leds) : FxStrip(num_leds) {}
+    Pride2015(uint16_t num_leds) : Fx1d(num_leds) {}
 
-    void lazyInit() override {}
     void draw(Fx::DrawContext context) override;
-    const char *fxName(int) const override { return "Pride2015"; }
+    fl::Str fxName() const override { return "Pride2015"; }
 
   private:
     uint16_t mPseudotime = 0;
@@ -74,4 +73,4 @@ void Pride2015::draw(Fx::DrawContext ctx) {
     }
 }
 
-FASTLED_NAMESPACE_END
+}  // namespace fl

@@ -4,23 +4,18 @@
 #include "fx/fx1d.h"
 #include "namespace.h"
 
-FASTLED_NAMESPACE_BEGIN
+namespace fl {
 
-FASTLED_SMART_REF(Cylon);
+FASTLED_SMART_PTR(Cylon);
 
 /// @brief   An animation that moves a single LED back and forth (Larson Scanner
 /// effect)
-class Cylon : public FxStrip {
+class Cylon : public Fx1d {
   public:
     uint8_t delay_ms;
     Cylon(uint16_t num_leds, uint8_t fade_amount = 250, uint8_t delay_ms = 10)
-        : FxStrip(num_leds), delay_ms(delay_ms), fade_amount(fade_amount) {}
+        : Fx1d(num_leds), delay_ms(delay_ms), fade_amount(fade_amount) {}
 
-
-
-    void lazyInit() override {
-        // No initialization needed for Cylon
-    }
 
     void draw(DrawContext context) override {
         if (context.leds == nullptr || mNumLeds == 0) {
@@ -53,7 +48,7 @@ class Cylon : public FxStrip {
         }
     }
 
-    const char *fxName(int) const override { return "Cylon"; }
+    fl::Str fxName() const override { return "Cylon"; }
 
   private:
     uint8_t hue = 0;
@@ -64,4 +59,4 @@ class Cylon : public FxStrip {
     int16_t position = 0;
 };
 
-FASTLED_NAMESPACE_END
+}  // namespace fl

@@ -11,13 +11,13 @@
 
 
 
-#include "str.h"
+#include "fl/str.h"
 #include "ui/ui_internal.h"
-#include "str.h"
-#include "engine_events.h"
+#include "fl/str.h"
+#include "fl/engine_events.h"
 #include "namespace.h"
-#include "screenmap.h"
-#include "ref.h"
+#include "fl/screenmap.h"
+#include "fl/ptr.h"
 #include "active_strip_data.h"
 
 
@@ -36,20 +36,25 @@ EMSCRIPTEN_KEEPALIVE uint32_t micros();
 EMSCRIPTEN_KEEPALIVE void delay(int ms);
 }
 
+
+
+//////////////////////////////////////////////////////////////////////////
+// BEGIN EMSCRIPTEN EXPORTS
+EMSCRIPTEN_KEEPALIVE extern "C" int extern_setup();
+EMSCRIPTEN_KEEPALIVE extern "C" int extern_loop();
+
+
 FASTLED_NAMESPACE_BEGIN
 
-// Sets the canvas size. This assumes one strip per row. This is
-// method is pretty inflexible and is likely to change in the future.
-void jsSetCanvasSize(int cledcontroler_id, int width, int height);
 
 class jsSlider {
   public:
-    jsSlider(const char *name, float value = 128.0f, float min = 0.0f, float max = 255.0f,
-             float step = 1.0f);
+    jsSlider(const fl::Str& name, float value = 128.0f, float min = 0.0f, float max = 255.0f,
+             float step = -1.f);
     ~jsSlider();
-    jsSlider& Group(const char* name) { mGroup = name; return *this; }
+    jsSlider& Group(const fl::Str& name) { mGroup = name; return *this; }
 
-    const char *name() const;
+    const fl::Str& name() const;
     void toJson(FLArduinoJson::JsonObject& json) const;
     float value() const;
     void setValue(float value);
@@ -58,7 +63,7 @@ class jsSlider {
     operator uint16_t() const;
     operator uint32_t() const { return static_cast<uint32_t>(mValue); }
     operator int() const;
-    const Str& groupName() const { return mGroup; }
+    const fl::Str& groupName() const { return mGroup; }
 
     template <typename T> bool operator>= (T v) const { return mValue >= static_cast<float>(v); }
     template <typename T> bool operator<= (T v) const { return mValue <= static_cast<float>(v); }
@@ -73,28 +78,28 @@ class jsSlider {
   private:
     void updateInternal(const FLArduinoJson::JsonVariantConst& value);
 
-    jsUiInternalRef mInternal;
+    jsUiInternalPtr mInternal;
     float mMin;
     float mMax;
     float mValue;
     float mStep;
-    Str mGroup;
+    fl::Str mGroup;
 };
 
 
 class jsNumberField {
   public:
-    jsNumberField(const char *name, double value, double min = 0, double max = 100);
+    jsNumberField(const fl::Str&, double value, double min = 0, double max = 100);
     ~jsNumberField();
-    jsNumberField& Group(const char* name) { mGroup = name; return *this; }
+    jsNumberField& Group(const fl::Str& name) { mGroup = name; return *this; }
 
-    const char *name() const;
+    const fl::Str& name() const;
     void toJson(FLArduinoJson::JsonObject& json) const;
     double value() const;
     void setValue(double value);
     operator double() const;
     operator int() const;
-    const Str& groupName() const { return mGroup; }
+    const fl::Str& groupName() const { return mGroup; }
 
     jsNumberField& operator=(double value) { setValue(value); return *this; }
     jsNumberField& operator=(int value) { setValue(static_cast<double>(value)); return *this; }
@@ -106,27 +111,27 @@ class jsNumberField {
   private:
     void updateInternal(const FLArduinoJson::JsonVariantConst& value);
 
-    jsUiInternalRef mInternal;
+    jsUiInternalPtr mInternal;
     double mValue;
     double mMin;
     double mMax;
-    Str mGroup;
+    fl::Str mGroup;
 };
 
 
 class jsCheckbox {
   public:
-    jsCheckbox(const char *name, bool value);
+    jsCheckbox(const fl::Str&, bool value);
     ~jsCheckbox();
-    jsCheckbox& Group(const char* name) { mGroup = name; return *this; };
+    jsCheckbox& Group(const fl::Str& name) { mGroup = name; return *this; };
 
-    const char *name() const;
+    const fl::Str& name() const;
     void toJson(FLArduinoJson::JsonObject& json) const;
     bool value() const;
     void setValue(bool value);
     operator bool() const;
     operator int() const;
-    const Str& groupName() const { return mGroup; }
+    const fl::Str& groupName() const { return mGroup; }
 
     jsCheckbox& operator=(bool value) { setValue(value); return *this; }
     jsCheckbox& operator=(int value) { setValue(value != 0); return *this; }
@@ -134,18 +139,18 @@ class jsCheckbox {
   private:
     void updateInternal(const FLArduinoJson::JsonVariantConst& value);
 
-    jsUiInternalRef mInternal;
+    jsUiInternalPtr mInternal;
     bool mValue;
-    Str mGroup;
+    fl::Str mGroup;
 };
 
 class jsButton {
   public:
-    jsButton(const char *name);
+    jsButton(const fl::Str& name);
     ~jsButton();
-    jsButton& Group(const char* name) { mGroup = name; return *this; }
+    jsButton& Group(const fl::Str& name) { mGroup = name; return *this; }
 
-    const char *name() const;
+    const fl::Str& name() const;
     void toJson(FLArduinoJson::JsonObject& json) const;
     bool isPressed() const;
     bool clicked() const {
@@ -153,15 +158,15 @@ class jsButton {
         return mClickedHappened;
     }
     operator bool() const { return clicked(); }
-    const Str& groupName() const { return mGroup; }
+    const fl::Str& groupName() const { return mGroup; }
 
   private:
-    struct Updater : EngineEvents::Listener {
+    struct Updater : fl::EngineEvents::Listener {
         void init(jsButton *owner) {
             mOwner = owner;
-            EngineEvents::addListener(this);
+            fl::EngineEvents::addListener(this);
         }
-        ~Updater() { EngineEvents::removeListener(this); }
+        ~Updater() { fl::EngineEvents::removeListener(this); }
         void onPlatformPreLoop2() override {
             mOwner->mClickedHappened = mOwner->mPressed && (mOwner->mPressed != mOwner->mPressedLast);
             mOwner->mPressedLast = mOwner->mPressed;
@@ -173,17 +178,49 @@ class jsButton {
 
     void updateInternal(const FLArduinoJson::JsonVariantConst& value);
 
-    jsUiInternalRef mInternal;
+    jsUiInternalPtr mInternal;
     bool mPressed = false;
     bool mPressedLast = false;
     bool mClickedHappened = false;
-    Str mGroup;
+    fl::Str mGroup;
 };
 
 
-void jsSetCanvasSize(const char* jsonString, size_t jsonSize);
-void jsSetCanvasSize(int cledcontoller_id, uint16_t width, uint16_t height);
-void jsSetCanvasSize(int cledcontoller_id, const ScreenMap& screenmap);
+class jsTitle {
+  public:
+    jsTitle(const fl::Str& text);
+    ~jsTitle();
+    jsTitle& Group(const fl::Str& name) { mGroup = name; return *this; }
+
+    void toJson(FLArduinoJson::JsonObject& json) const;
+    const fl::Str& groupName() const { return mGroup; }
+    const fl::Str& text() const { return mText; }
+
+  private:
+    jsUiInternalPtr mInternal;
+    fl::Str mGroup;
+    fl::Str mText;
+};
+
+class jsDescription {
+  public:
+    jsDescription(const fl::Str& text);
+    ~jsDescription();
+    jsDescription& Group(const fl::Str& name) { mGroup = name; return *this; }
+
+
+    void toJson(FLArduinoJson::JsonObject& json) const;
+    const fl::Str& groupName() const { return mGroup; }
+    const fl::Str& text() const { return mText; }
+
+  private:
+    jsUiInternalPtr mInternal;
+    fl::Str mGroup;
+    fl::Str mText;
+};
+
+
+void jsSetCanvasSize(int cledcontoller_id, const fl::ScreenMap& screenmap);
 void jsOnFrame(ActiveStripData& active_strips);
 void jsOnStripAdded(uintptr_t strip, uint32_t num_leds);
 void updateJs(const char* jsonStr);
@@ -194,11 +231,15 @@ void updateJs(const char* jsonStr);
 #define FASTLED_HAS_UI_SLIDER 1
 #define FASTLED_HAS_UI_CHECKBOX 1
 #define FASTLED_HAS_UI_NUMBER_FIELD 1
+#define FASTLED_HAS_UI_TITLE 1
+#define FASTLED_HAS_UI_DESCRIPTION 1
 
 typedef jsNumberField NumberField;
 typedef jsSlider Slider;
 typedef jsCheckbox Checkbox;
 typedef jsButton Button;
+typedef jsTitle Title;
+typedef jsDescription Description;
 
 
 FASTLED_NAMESPACE_END

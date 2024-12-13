@@ -7,31 +7,26 @@
 #include <emscripten/emscripten.h> // Include Emscripten headers
 #include <emscripten/html5.h>
 
-
-
 #include <memory>
 #include <stdint.h>
 #include <stdio.h>
 #include <string>
 
-
-
 #include "ui/ui_internal.h"
-#include "str.h"
+#include "fl/str.h"
 #include "active_strip_data.h"
-#include "engine_events.h"
 #include "js.h"
-#include "str.h"
+#include "fl/str.h"
 #include "namespace.h"
-#include "screenmap.h"
-#include "fixed_map.h"
+#include "fl/screenmap.h"
+#include "fl/map.h"
+#include "engine_listener.h"
+#include "fl/dbg.h"
 
+using namespace fl;
 
-
-FASTLED_NAMESPACE_BEGIN
-
-
-EMSCRIPTEN_KEEPALIVE void jsSetCanvasSize(const char* jsonString, size_t jsonSize) {
+static void jsSetCanvasSizeJson(const char* jsonString, size_t jsonSize) {
+    FASTLED_DBG("jsSetCanvasSize1");
     EM_ASM_({
         globalThis.FastLED_onStripUpdate = globalThis.FastLED_onStripUpdate || function(jsonStr) {
             console.log("Missing globalThis.FastLED_onStripUpdate(jsonStr) function");
@@ -42,28 +37,36 @@ EMSCRIPTEN_KEEPALIVE void jsSetCanvasSize(const char* jsonString, size_t jsonSiz
     }, jsonString, jsonSize);
 }
 
-EMSCRIPTEN_KEEPALIVE void jsSetCanvasSize(int cledcontoller_id, const ScreenMap &screenmap) {
-    // TODO: ScreenMap::toJson() should be used here. Right now we just send
-    // the screen map updates one at a time. While the ScreenMap::toJson() allows
-    // bulk conversion and is tested. This is an ad-hoc json format for the FastLED.js
-    // and it should be normalized to the way the ScreenMap::toJson() does it.
+static void _jsSetCanvasSize(int cledcontoller_id, const fl::ScreenMap &screenmap) {
+    FASTLED_DBG("Begin jsSetCanvasSize json serialization");
     FLArduinoJson::JsonDocument doc;
     doc["strip_id"] = cledcontoller_id;
     doc["event"] = "set_canvas_map";
-    auto array = doc["map"].to<FLArduinoJson::JsonArray>();
+    auto map = doc["map"].to<FLArduinoJson::JsonObject>();
+    doc["length"] = screenmap.getLength();
+    auto x = map["x"].to<FLArduinoJson::JsonArray>();
+    auto y = map["y"].to<FLArduinoJson::JsonArray>();
     for (uint32_t i = 0; i < screenmap.getLength(); i++) {
-        auto entry = array[i].to<FLArduinoJson::JsonArray>();
-        entry.add(screenmap[i].x);
-        entry.add(screenmap[i].y);
+        x.add(screenmap[i].x);
+        y.add(screenmap[i].y);
     }
     // add diameter.
     float diameter = screenmap.getDiameter();
     if (diameter > 0.0f) {
         doc["diameter"] = diameter;
     }
+    FASTLED_DBG("Finished json dict building.");
     Str jsonBuffer;
     serializeJson(doc, jsonBuffer);
-    jsSetCanvasSize(jsonBuffer.c_str(), jsonBuffer.size());
+    FASTLED_DBG("End jsSetCanvasSize json serialization");
+    jsSetCanvasSizeJson(jsonBuffer.c_str(), jsonBuffer.size());
+}
+
+
+
+
+void jsSetCanvasSize(int cledcontoller_id, const fl::ScreenMap &screenmap) {
+    _jsSetCanvasSize(cledcontoller_id, screenmap);
 }
 
 EMSCRIPTEN_KEEPALIVE void jsFillInMissingScreenMaps(ActiveStripData &active_strips) {
@@ -101,7 +104,7 @@ EMSCRIPTEN_KEEPALIVE void jsFillInMissingScreenMaps(ActiveStripData &active_stri
                 active_strips.updateScreenMap(stripIndex, screenmap);
                 // Fire off the event to the JavaScript side that we now have
                 // a screenmap for this strip.
-                jsSetCanvasSize(stripIndex, screenmap);
+                _jsSetCanvasSize(stripIndex, screenmap);
             } else {
                 printf("Creating linear screenmap for %d\n", pixel_count);
                 ScreenMap screenmap(pixel_count);
@@ -111,7 +114,7 @@ EMSCRIPTEN_KEEPALIVE void jsFillInMissingScreenMaps(ActiveStripData &active_stri
                 active_strips.updateScreenMap(stripIndex, screenmap);
                 // Fire off the event to the JavaScript side that we now have
                 // a screenmap for this strip.
-                jsSetCanvasSize(stripIndex, screenmap);
+                _jsSetCanvasSize(stripIndex, screenmap);
             }
         }
     }
@@ -190,7 +193,37 @@ EMSCRIPTEN_KEEPALIVE void updateJs(const char* jsonStr) {
 }
 
 
+// extern setup and loop
+extern void setup();
+extern void loop();
 
-FASTLED_NAMESPACE_END
+
+inline void setup_once() {
+    static bool g_setup_called = false;
+    if (g_setup_called) {
+        return;
+    }
+    EngineListener::Init();
+    g_setup_called = true;
+    setup();
+}
+
+//////////////////////////////////////////////////////////////////////////
+// BEGIN EMSCRIPTEN EXPORTS
+EMSCRIPTEN_KEEPALIVE extern "C" int extern_setup() {
+    setup_once();
+    return 0;
+}
+
+EMSCRIPTEN_KEEPALIVE extern "C" int extern_loop() {
+
+    setup_once();
+    //fastled_resume_timer();
+    fl::EngineEvents::onPlatformPreLoop();
+    loop();
+    //fastled_pause_timer();
+    return 0;
+}
+
 
 #endif  // __EMSCRIPTEN__

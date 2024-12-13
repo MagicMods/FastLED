@@ -10,12 +10,12 @@
 #include "pixeltypes.h"
 #include "color.h"
 
-#include "force_inline.h"
+#include "fl/force_inline.h"
 #include "pixel_controller.h"
 #include "dither_mode.h"
 #include "pixel_iterator.h"
-#include "engine_events.h"
-#include "screenmap.h"
+#include "fl/engine_events.h"
+#include "fl/screenmap.h"
 
 FASTLED_NAMESPACE_BEGIN
 
@@ -39,6 +39,7 @@ protected:
     CRGB m_ColorCorrection;    ///< CRGB object representing the color correction to apply to the strip on show()  @see setCorrection
     CRGB m_ColorTemperature;   ///< CRGB object representing the color temperature to apply to the strip on show() @see setTemperature
     EDitherMode m_DitherMode;  ///< the current dither mode of the controller
+    bool m_enabled = true;
     int m_nLeds;               ///< the number of LEDs in the LED data array
     static CLEDController *m_pHead;  ///< pointer to the first LED controller in the linked list
     static CLEDController *m_pTail;  ///< pointer to the last LED controller in the linked list
@@ -65,15 +66,30 @@ public:
         mRgbMode = arg;
         return *this;  // builder pattern.
     }
+
+    void setEnabled(bool enabled) { m_enabled = enabled; }
+
+    CLEDController();
+    #if defined(FASTLED_TESTING)
+    // Silences the warning about the destructor not being virtual during testing.
+    // Testing shows that this virtual destructor adds a 600 bytes to the binary on
+    // attiny85 and about 1k for the teensy 4.X series.
+    // Attiny85:
+    //   With CLEDController destructor virtual: 11018 bytes to binary.
+    //   Without CLEDController destructor virtual: 10666 bytes to binary.
+    // Looking at the ELF/Map file, it appears that adding a virtual destructor to this
+    // base class not only adds vtables to the subclasses, but also pulls in malloc & free,
+    // which are by far the largest functions in binary size.
+    // Since we don't control how this library is compiled, the only thing we can do is
+    // carefully enable this virtual destructor for testing only and in the future, for boards
+    // that have enough space to handle the extra binary size.
+    virtual ~CLEDController();
+    #else
+    ~CLEDController();
+    #endif
     Rgbw getRgbw() const { return mRgbMode; }
 
-    /// Create an led controller object, add it to the chain of controllers
-    CLEDController() : m_Data(NULL), m_ColorCorrection(UncorrectedColor), m_ColorTemperature(UncorrectedTemperature), m_DitherMode(BINARY_DITHER), m_nLeds(0) {
-        m_pNext = NULL;
-        if(m_pHead==NULL) { m_pHead = this; }
-        if(m_pTail != NULL) { m_pTail->m_pNext = this; }
-        m_pTail = this;
-    }
+
 
     /// Initialize the LED controller
     virtual void init() = 0;
@@ -84,18 +100,7 @@ public:
         clearLedDataInternal(nLeds);
     }
 
-    inline ColorAdjustment getAdjustmentData(uint8_t brightness) {
-        // *premixed = getAdjustment(brightness);
-        // if (color_correction) {
-        //     *color_correction = getAdjustment(255);
-        // }
-        #if FASTLED_HD_COLOR_MIXING
-        ColorAdjustment out = {getAdjustment(brightness), getAdjustment(255), brightness};
-        #else
-        ColorAdjustment out = {getAdjustment(brightness)};
-        #endif
-        return out;
-    }
+    ColorAdjustment getAdjustmentData(uint8_t brightness);
 
     /// @copybrief show(const struct CRGB*, int, CRGB)
     ///
@@ -105,7 +110,9 @@ public:
     /// @param brightness the brightness of the LEDs
     /// @see show(const struct CRGB*, int, CRGB)
     void showInternal(const struct CRGB *data, int nLeds, uint8_t brightness) {
-        show(data, nLeds,brightness);
+        if (m_enabled) {
+           show(data, nLeds,brightness);
+        }
     }
 
     /// @copybrief showColor(const struct CRGB&, int, CRGB)
@@ -116,14 +123,18 @@ public:
     /// @param brightness the brightness of the LEDs
     /// @see showColor(const struct CRGB&, int, CRGB)
     void showColorInternal(const struct CRGB &data, int nLeds, uint8_t brightness) {
-        showColor(data, nLeds, brightness);
+        if (m_enabled) {
+            showColor(data, nLeds, brightness);
+        }
     }
 
     /// Write the data to the LEDs managed by this controller
     /// @param brightness the brightness of the LEDs
     /// @see show(const struct CRGB*, int, uint8_t)
     void showLedsInternal(uint8_t brightness) {
-        show(m_Data, m_nLeds, brightness);
+        if (m_enabled) {
+            show(m_Data, m_nLeds, brightness);
+        }
     }
 
     /// @copybrief showColor(const struct CRGB&, int, CRGB)
@@ -132,7 +143,9 @@ public:
     /// @param brightness the brightness of the LEDs
     /// @see showColor(const struct CRGB&, int, CRGB)
     void showColorInternal(const struct CRGB & data, uint8_t brightness) {
-        showColor(data, m_nLeds, brightness);
+        if (m_enabled) {
+            showColor(data, m_nLeds, brightness);
+        }
     }
 
     /// Get the first LED controller in the linked list of controllers
@@ -153,13 +166,7 @@ public:
     }
 
     /// Zero out the LED data managed by this controller
-    void clearLedDataInternal(int nLeds = -1) {
-        if(m_Data) {
-            nLeds = (nLeds < 0) ? m_nLeds : nLeds;
-            nLeds = (nLeds > m_nLeds) ? m_nLeds : nLeds;
-            memset((void*)m_Data, 0, sizeof(struct CRGB) * nLeds);
-        }
-    }
+    void clearLedDataInternal(int nLeds = -1);
 
     /// How many LEDs does this controller manage?
     /// @returns CLEDController::m_nLeds
@@ -183,20 +190,20 @@ public:
     /// @returns a reference to the controller
     inline CLEDController & setDither(uint8_t ditherMode = BINARY_DITHER) { m_DitherMode = ditherMode; return *this; }
 
-    CLEDController& setScreenCoords(const XYMap& map) {
+    CLEDController& setScreenMap(const fl::XYMap& map) {
         // EngineEvents::onCanvasUiSet(this, map);
-        ScreenMap screenmap = map.toScreenMap();
-        EngineEvents::onCanvasUiSet(this, screenmap);
+        fl::ScreenMap screenmap = map.toScreenMap();
+        fl::EngineEvents::onCanvasUiSet(this, screenmap);
         return *this;
     }
 
-    CLEDController& setScreenCoords(const ScreenMap& map) {
-        EngineEvents::onCanvasUiSet(this, map);
+    CLEDController& setScreenMap(const fl::ScreenMap& map) {
+        fl::EngineEvents::onCanvasUiSet(this, map);
         return *this;
     }
 
-    CLEDController& setScreenCoords(uint16_t width, uint16_t height) {
-        return setScreenCoords(XYMap::constructRectangularGrid(width, height));
+    CLEDController& setScreenMap(uint16_t width, uint16_t height) {
+        return setScreenMap(fl::XYMap::constructRectangularGrid(width, height));
     }
 
     /// Get the dithering option currently set for this controller

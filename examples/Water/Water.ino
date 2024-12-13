@@ -4,7 +4,7 @@
 
 #include <FastLED.h>
 #include "Arduino.h"
-#include "xymap.h"
+#include "fl/xymap.h"
 
 #define WIDTH 32
 #define HEIGHT 32
@@ -21,7 +21,7 @@ void process_water(uint8_t * src, uint8_t * dst) ;
 
 void setup() {
   Serial.begin(115200);
-  FastLED.addLeds<NEOPIXEL, 2>(leds, NUM_LEDS).setScreenCoords(WIDTH, HEIGHT);
+  FastLED.addLeds<NEOPIXEL, 2>(leds, NUM_LEDS).setScreenMap(WIDTH, HEIGHT);
 }
 
 // from: https://github.com/FastLED/FastLED/pull/202

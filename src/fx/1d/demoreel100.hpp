@@ -4,7 +4,7 @@
 #include "fx/fx1d.h"
 #include "namespace.h"
 
-FASTLED_NAMESPACE_BEGIN
+namespace fl {
 
 
 
@@ -17,18 +17,19 @@ FASTLED_NAMESPACE_BEGIN
 //
 // -Mark Kriegsman, December 2014
 
-FASTLED_SMART_REF(DemoReel100);
+FASTLED_SMART_PTR(DemoReel100);
 
-class DemoReel100 : public FxStrip {
+class DemoReel100 : public Fx1d {
   public:
-    DemoReel100(uint16_t num_leds) : FxStrip(num_leds) {}
-
-    void lazyInit() override { start_time = millis(); }
+    DemoReel100(uint16_t num_leds) : Fx1d(num_leds) {}
 
     void draw(DrawContext context) override {
         CRGB *leds = context.leds;
         if (leds == nullptr || mNumLeds == 0) {
             return;
+        }
+        if (start_time == 0) {
+            start_time = millis();
         }
 
         // Call the current pattern function once, updating the 'leds' array
@@ -41,7 +42,7 @@ class DemoReel100 : public FxStrip {
         EVERY_N_SECONDS(10) { nextPattern(); } // change patterns periodically
     }
 
-    const char *fxName(int) const override { return "DemoReel100"; }
+    fl::Str fxName() const override { return "DemoReel100"; }
 
   private:
     uint8_t current_pattern_number = 0;
@@ -130,4 +131,4 @@ class DemoReel100 : public FxStrip {
     }
 };
 
-FASTLED_NAMESPACE_END
+}  // namespace fl

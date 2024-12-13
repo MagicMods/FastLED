@@ -1,14 +1,15 @@
 // g++ --std=c++11 test_fixed_map.cpp -I../src
 
-#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "doctest.h"
-#include "fixed_map.h"
+#include "test.h"
+#include "test.h"
+#include "fl/map.h"
+#include <string>
 
 #include "namespace.h"
 FASTLED_USING_NAMESPACE
 
-TEST_CASE("FixedMap operations") {
-    FixedMap<int, int, 5> map;
+TEST_CASE("fl::FixedMap operations") {
+    fl::FixedMap<int, int, 5> map;
 
     SUBCASE("Insert and find") {
         CHECK(map.insert(1, 10));
@@ -93,5 +94,37 @@ TEST_CASE("FixedMap operations") {
             sum += pair.second;
         }
         CHECK(sum == 60);
+    }
+}
+
+TEST_CASE("SortedHeapMap operations") {
+    struct Less {
+        bool operator()(int a, int b) const { return a < b; }
+    };
+
+    SUBCASE("Insert maintains key order") {
+        fl::SortedHeapMap<int, std::string, Less> map(5);
+        
+        map.insert(3, "three");
+        map.insert(1, "one");
+        map.insert(4, "four");
+        map.insert(2, "two");
+
+        CHECK(map.size() == 4);
+        CHECK(map.has(1));
+        CHECK(map.has(2));
+        CHECK(map.has(3));
+        CHECK(map.has(4));
+        CHECK_FALSE(map.has(5));
+
+        // Verify order by iterating
+        auto it = map.begin();
+        CHECK(it->first == 1);
+        ++it;
+        CHECK(it->first == 2);
+        ++it;
+        CHECK(it->first == 3);
+        ++it;
+        CHECK(it->first == 4);
     }
 }

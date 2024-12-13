@@ -4,21 +4,20 @@
 #include "fx/fx1d.h"
 #include "namespace.h"
 
-FASTLED_NAMESPACE_BEGIN
+namespace fl {
 
 /// @file    pacifica.hpp
 /// @brief   An animation that simulates gentle, blue-green ocean waves
 /// @example Pacifica.ino
 
-FASTLED_SMART_REF(Pacifica);
+FASTLED_SMART_PTR(Pacifica);
 
-class Pacifica : public FxStrip {
+class Pacifica : public Fx1d {
   public:
-    Pacifica(uint16_t num_leds) : FxStrip(num_leds) {}
+    Pacifica(uint16_t num_leds) : Fx1d(num_leds) {}
 
-    void lazyInit() override {}
     void draw(DrawContext context) override;
-    const char *fxName(int) const override { return "Pacifica"; }
+    fl::Str fxName() const override { return "Pacifica"; }
 
   private:
     uint16_t sCIStart1 = 0, sCIStart2 = 0, sCIStart3 = 0, sCIStart4 = 0;
@@ -133,4 +132,4 @@ void Pacifica::pacifica_deepen_colors(CRGB *leds) {
     }
 }
 
-FASTLED_NAMESPACE_END
+}  // namespace fl

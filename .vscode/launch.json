@@ -24,21 +24,9 @@
         {
             "type": "platformio-debug",
             "request": "launch",
-            "name": "PIO Debug (skip Pre-Debug)",
-            "executable": "c:/Data/Svibe/Svibe_Firmware/LibMod/FastLED/.pio/build/dev/firmware.elf",
-            "projectEnvName": "dev",
-            "toolchainBinDir": "C:/Users/Rs/.platformio/packages/toolchain-riscv32-esp/bin",
-            "internalConsoleOptions": "openOnSessionStart"
-        },
-        {
-            "type": "platformio-debug",
-            "request": "launch",
-            "name": "PIO Debug (without uploading)",
-            "executable": "c:/Data/Svibe/Svibe_Firmware/LibMod/FastLED/.pio/build/dev/firmware.elf",
-            "projectEnvName": "dev",
-            "toolchainBinDir": "C:/Users/Rs/.platformio/packages/toolchain-riscv32-esp/bin",
-            "internalConsoleOptions": "openOnSessionStart",
-            "loadMode": "manual"
+            "name": "Launch(gdb)",
+            "program": "tests/.build/bin/${fileBasenameNoExtension}",
+            "cwd": "${workspaceRoot}"
         }
     ]
 }

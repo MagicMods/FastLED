@@ -2,9 +2,10 @@
 
 #include "FastLED.h"
 #include "fx/fx1d.h"
+#include "fl/str.h"
 #include "namespace.h"
 
-FASTLED_NAMESPACE_BEGIN
+namespace fl {
 
 
 
@@ -106,22 +107,20 @@ FASTLED_NAMESPACE_BEGIN
 // incandescent bulbs change color as they get dim down.
 #define COOL_LIKE_INCANDESCENT 1
 
-FASTLED_SMART_REF(TwinkleFox);
+FASTLED_SMART_PTR(TwinkleFox);
 
-class TwinkleFox : public FxStrip {
+class TwinkleFox : public Fx1d {
   public:
     CRGBPalette16 targetPalette;
     CRGBPalette16 currentPalette;
 
     TwinkleFox(uint16_t num_leds)
-        : FxStrip(num_leds), backgroundColor(CRGB::Black),
+        : Fx1d(num_leds), backgroundColor(CRGB::Black),
           twinkleSpeed(TWINKLE_SPEED), twinkleDensity(TWINKLE_DENSITY),
           coolLikeIncandescent(COOL_LIKE_INCANDESCENT),
           autoSelectBackgroundColor(AUTO_SELECT_BACKGROUND_COLOR) {
-        lazyInit();
+        chooseNextColorPalette(targetPalette);
     }
-
-    void lazyInit() override { chooseNextColorPalette(targetPalette); }
 
     void draw(DrawContext context) override {
         EVERY_N_MILLISECONDS(10) {
@@ -131,7 +130,7 @@ class TwinkleFox : public FxStrip {
     }
 
     void chooseNextColorPalette(CRGBPalette16 &pal);
-    const char *fxName(int) const override { return "TwinkleFox"; }
+    fl::Str fxName() const override { return "TwinkleFox"; }
 
   private:
     CRGB backgroundColor;
@@ -306,4 +305,4 @@ void TwinkleFox::chooseNextColorPalette(CRGBPalette16 &pal) {
     pal = *(ActivePaletteList[whichPalette]);
 }
 
-FASTLED_NAMESPACE_END
+}  // namespace fl

@@ -11,17 +11,18 @@
 #include "fx/fx2d.h"
 #include "lib8tion/random8.h"
 #include "noise.h"
-#include "ref.h"
-#include "xymap.h"
+#include "fl/ptr.h"
+#include "fl/xymap.h"
 
-FASTLED_NAMESPACE_BEGIN
+namespace fl {
 
-FASTLED_SMART_REF(NoisePalette);
+FASTLED_SMART_PTR(NoisePalette);
 
-class NoisePalette : public FxGrid {
+class NoisePalette : public Fx2d {
   public:
-    NoisePalette(XYMap xyMap)
-        : FxGrid(xyMap), speed(0), scale(0), colorLoop(1) {
+    // Fps is used by the fx_engine to maintain a fixed frame rate, ignored otherwise.
+    NoisePalette(XYMap xyMap, float fps = 60.f)
+        : Fx2d(xyMap), speed(0), scale(0), colorLoop(1), mFps(fps) {
         width = xyMap.getWidth();
         height = xyMap.getHeight();
 
@@ -33,20 +34,22 @@ class NoisePalette : public FxGrid {
         setPalettePreset(0);
 
         // Allocate memory for the noise array using scoped_ptr
-        noise = scoped_ptr<uint8_t>(new uint8_t[width * height]);
+        noise = fl::scoped_ptr<uint8_t>(new uint8_t[width * height]);
+    }
+
+    bool hasFixedFrameRate(float *fps) const override {
+        *fps = mFps;
+        return true;
     }
 
     // No need for a destructor, scoped_ptr will handle memory deallocation
-
-    void lazyInit() override {}
 
     void draw(DrawContext context) override {
         fillnoise8();
         mapNoiseToLEDsUsingPalette(context.leds);
     }
 
-    const char *fxName(int which) const override { return "NoisePalette"; }
-
+    Str fxName() const override { return "NoisePalette"; }
     void mapNoiseToLEDsUsingPalette(CRGB *leds);
 
     uint8_t changeToRandomPalette();
@@ -71,10 +74,11 @@ class NoisePalette : public FxGrid {
     uint16_t width, height;
     uint16_t speed = 0;
     uint16_t scale = 0;
-    scoped_ptr<uint8_t> noise;
+    fl::scoped_ptr<uint8_t> noise;
     CRGBPalette16 currentPalette = PartyColors_p;
     bool colorLoop = 0;
     int currentPaletteIndex = 0;
+    float mFps = 60.f;
 
     void fillnoise8();
 
@@ -266,4 +270,4 @@ inline uint8_t NoisePalette::changeToRandomPalette() {
     }
 }
 
-FASTLED_NAMESPACE_END
+}  // namespace fl

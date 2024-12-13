@@ -4,7 +4,7 @@
 #include "fx/fx1d.h"
 #include "namespace.h"
 
-FASTLED_NAMESPACE_BEGIN
+namespace fl {
 
 
 /// @brief   Simple one-dimensional fire animation function
@@ -44,14 +44,14 @@ FASTLED_NAMESPACE_BEGIN
 // Higher chance = more roaring fire.  Lower chance = more flickery fire.
 // Default 120, suggested range 50-200.
 
-FASTLED_SMART_REF(Fire2012);
+FASTLED_SMART_PTR(Fire2012);
 
-class Fire2012 : public FxStrip {
+class Fire2012 : public Fx1d {
   public:
     Fire2012(uint16_t num_leds, uint8_t cooling = 55, uint8_t sparking = 120,
              bool reverse_direction = false,
              const CRGBPalette16 &palette = HeatColors_p)
-        : FxStrip(num_leds), cooling(cooling), sparking(sparking),
+        : Fx1d(num_leds), cooling(cooling), sparking(sparking),
           reverse_direction(reverse_direction), palette(palette) {
         heat.reset(new uint8_t[num_leds]()); // Initialize to zero
     }
@@ -97,14 +97,14 @@ class Fire2012 : public FxStrip {
         }
     }
 
-    const char *fxName(int) const override { return "Fire2012"; }
+    fl::Str fxName() const override { return "Fire2012"; }
 
   private:
-    scoped_array<uint8_t> heat;
+    fl::scoped_array<uint8_t> heat;
     uint8_t cooling;
     uint8_t sparking;
     bool reverse_direction;
     CRGBPalette16 palette;
 };
 
-FASTLED_NAMESPACE_END
+}  // namespace fl

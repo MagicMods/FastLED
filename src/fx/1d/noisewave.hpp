@@ -5,21 +5,22 @@
 #include "namespace.h"
 #include "noisegen.h"
 
-FASTLED_NAMESPACE_BEGIN
+namespace fl {
 
-FASTLED_SMART_REF(NoiseWave);
+FASTLED_SMART_PTR(NoiseWave);
 
-class NoiseWave : public FxStrip {
+class NoiseWave : public Fx1d {
   public:
     NoiseWave(uint16_t num_leds)
-        : FxStrip(num_leds), noiseGeneratorRed(500, 14),
+        : Fx1d(num_leds), noiseGeneratorRed(500, 14),
           noiseGeneratorBlue(500, 10) {}
-
-    void lazyInit() override { start_time = millis(); }
 
     void draw(DrawContext context) override {
         if (context.leds == nullptr || mNumLeds == 0) {
             return;
+        }
+        if (start_time == 0) {
+            start_time = context.now;
         }
 
         unsigned long time_now = millis() - start_time;
@@ -32,12 +33,12 @@ class NoiseWave : public FxStrip {
         }
     }
 
-    const char *fxName(int) const override { return "NoiseWave"; }
+    fl::Str fxName() const override { return "NoiseWave"; }
 
   private:
     NoiseGenerator noiseGeneratorRed;
     NoiseGenerator noiseGeneratorBlue;
-    unsigned long start_time = 0;
+    uint32_t start_time = 0;
 };
 
-FASTLED_NAMESPACE_END
+}  // namespace fl

@@ -1,4 +1,4 @@
-name: wasm compilers
+name: wasm_compile_test
 
 on:
     push:
@@ -18,12 +18,9 @@ jobs:
     - name: Install UV
       run: pip install uv
 
-    - name: Build Image
-      run: uv run ci/wasm_compile.py -b --no-open examples/wasm
+    - name: uv run ci/run_test_wasm_local_compile.py
+      run: uv run ci/run_test_wasm_local_compile.py
 
-    - name: Build WASM Compiler
-      run: ./wasm --build_wasm_compiler
-      shell: bash
 
     - name: Generate timestamp and random hex
       id: generate_id

@@ -10,7 +10,7 @@ import time
 import warnings
 from pathlib import Path
 
-from ci.boards import Board, get_board
+from ci.boards import ESP32_S3_DEVKITC_1, ESP32DEV, Board, get_board
 from ci.concurrent_run import ConcurrentRunArgs, concurrent_run
 from ci.locked_print import locked_print
 
@@ -37,11 +37,11 @@ DEFAULT_BOARDS_NAMES = [
     "uno",  # Build is faster if this is first, because it's used for global init.
     "esp32dev",
     "esp01",  # ESP8266
-    "esp32-c3-devkitm-1",
+    "esp32c3",
     "attiny85",
     "ATtiny1616",
-    "esp32-c6-devkitc-1",
-    "esp32-s3-devkitc-1",
+    "esp32c6",
+    "esp32s3",
     "yun",
     "digix",
     "teensy30",
@@ -69,6 +69,7 @@ DEFAULT_EXAMPLES = [
     "Apa102HD",
     "Apa102HDOverride",
     "Blink",
+    "Blur",
     "ColorPalette",
     "ColorTemperature",
     "Cylon",
@@ -88,9 +89,14 @@ DEFAULT_EXAMPLES = [
     "RGBWEmulated",
     "TwinkleFox",
     "XYMatrix",
-    "Video/Gfx2Video",
+    "Gfx2Video",
     "SdCard",
 ]
+
+EXTRA_EXAMPLES: dict[Board, list[str]] = {
+    ESP32DEV: ["EspI2SDemo"],
+    ESP32_S3_DEVKITC_1: ["EspI2SDemo"],
+}
 
 
 def parse_args():
@@ -223,6 +229,11 @@ def create_concurrent_run_args(args: argparse.Namespace) -> ConcurrentRunArgs:
     projects: list[Board] = []
     for board in boards:
         projects.append(get_board(board, no_project_options=args.no_project_options))
+    extra_examples: dict[Board, list[Path]] = {}
+    if args.examples is None:
+        for b, _examples in EXTRA_EXAMPLES.items():
+            resolved_examples = [resolve_example_path(example) for example in _examples]
+            extra_examples[b] = resolved_examples
     examples = args.examples.split(",") if args.examples else DEFAULT_EXAMPLES
     examples_paths = [resolve_example_path(example) for example in examples]
     defines: list[str] = []
@@ -234,6 +245,7 @@ def create_concurrent_run_args(args: argparse.Namespace) -> ConcurrentRunArgs:
     build_dir = args.build_dir
     extra_scripts = "pre:lib/ci/ci-flags.py"
     verbose = args.verbose
+
     out: ConcurrentRunArgs = ConcurrentRunArgs(
         projects=projects,
         examples=examples_paths,
@@ -247,6 +259,7 @@ def create_concurrent_run_args(args: argparse.Namespace) -> ConcurrentRunArgs:
         board_dir=(HERE / "boards").absolute().as_posix(),
         build_flags=BUILD_FLAGS,
         verbose=verbose,
+        extra_examples=extra_examples,
     )
     return out
 

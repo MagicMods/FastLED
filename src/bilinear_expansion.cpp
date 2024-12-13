@@ -8,8 +8,9 @@
 #include "bilinear_expansion.h"
 #include "crgb.h"
 #include "namespace.h"
-#include "xymap.h"
+#include "fl/xymap.h"
 
+using namespace fl;
 
 FASTLED_NAMESPACE_BEGIN
 
@@ -162,13 +163,7 @@ uint8_t bilinearInterpolatePowerOf2(uint8_t v00, uint8_t v10, uint8_t v01,
 /// 2D LED matrix
 /// @example NoisePlusPalette.hpp
 
-#include "bilinear_expansion.h"
-#include "crgb.h"
-#include "namespace.h"
-#include "xymap.h"
-#include <stdint.h>
 
-FASTLED_NAMESPACE_BEGIN
 
 // Floating-point version of bilinear interpolation
 uint8_t bilinearInterpolateFloat(uint8_t v00, uint8_t v10, uint8_t v01,
@@ -284,8 +279,5 @@ void bilinearExpandFloat(const CRGB *input, CRGB *output,
         }
     }
 }
-
-FASTLED_NAMESPACE_END
-
 
 FASTLED_NAMESPACE_END

@@ -13,7 +13,7 @@
 #include "fx/fx2d.h"
 #include "lib8tion/random8.h"
 #include "noise.h"
-#include "ref.h"
+#include "fl/ptr.h"
 #include "xymap.h"
 
 // Optimized for 2^n grid sizes in terms of both memory and performance.
@@ -35,20 +35,19 @@
 #define FASTLED_SCALE_UP FASTLED_SCALE_UP_DECIDE_AT_RUNTIME
 #endif
 
-FASTLED_NAMESPACE_BEGIN
+namespace fl {
 
-FASTLED_SMART_REF(ScaleUp);
+FASTLED_SMART_PTR(ScaleUp);
 
 // Uses bilearn filtering to double the size of the grid.
-class ScaleUp : public FxGrid {
+class ScaleUp : public Fx2d {
   public:
-    ScaleUp(XYMap xymap, FxGridRef fx) : FxGrid(xymap), mDelegate(fx) {
+    ScaleUp(XYMap xymap, Fx2dPtr fx) : Fx2d(xymap), mDelegate(fx) {
         // Turn off re-mapping of the delegate's XYMap, since bilinearExpand needs to
         // work in screen coordinates. The final mapping will for this class will
         // still be performed.
         mDelegate->getXYMap().setRectangularGrid();
     }
-    void lazyInit() override {}
     void draw(DrawContext context) override {
         if (!mSurface) {
             mSurface.reset(new CRGB[mDelegate->getNumLeds()]);
@@ -83,7 +82,7 @@ class ScaleUp : public FxGrid {
 #endif
     }
 
-    const char *fxName(int) const override { return "scale_up"; }
+    fl::Str fxName() const override { return "scale_up"; }
 
   private:
     // No expansion needed. Also useful for debugging.
@@ -99,8 +98,8 @@ class ScaleUp : public FxGrid {
             }
         }
     }
-    FxGridRef mDelegate;
-    scoped_array<CRGB> mSurface;
+    Fx2dPtr mDelegate;
+    fl::scoped_array<CRGB> mSurface;
 };
 
-FASTLED_NAMESPACE_END
+}  // namespace fl

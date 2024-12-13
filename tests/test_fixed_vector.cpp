@@ -1,17 +1,17 @@
 
 // g++ --std=c++11 test.cpp
 
-#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "test.h"
 
-#include "doctest.h"
-#include "fixed_vector.h"
+#include "test.h"
+#include "fl/vector.h"
 
 #include "namespace.h"
-FASTLED_USING_NAMESPACE
+
+using namespace fl;
 
 TEST_CASE("Fixed vector simple") {
-    FASTLED_USING_NAMESPACE;
-    FixedVector<int, 5> vec;
+    fl::FixedVector<int, 5> vec;
 
     SUBCASE("Initial state") {
         CHECK(vec.size() == 0);
@@ -53,7 +53,7 @@ TEST_CASE("Fixed vector simple") {
 
 TEST_CASE("Fixed vector insert") {
     FASTLED_USING_NAMESPACE;
-    FixedVector<int, 5> vec;
+    fl::FixedVector<int, 5> vec;
 
     SUBCASE("Insert at beginning") {
         vec.push_back(20);
@@ -111,7 +111,7 @@ TEST_CASE("Fixed vector insert") {
 
 TEST_CASE("Fixed vector find_if with predicate") {
     FASTLED_USING_NAMESPACE;
-    FixedVector<int, 5> vec;
+    fl::FixedVector<int, 5> vec;
 
     SUBCASE("Find even number") {
         vec.push_back(1);
@@ -152,7 +152,7 @@ TEST_CASE("Fixed vector find_if with predicate") {
     }
 }
 
-TEST_CASE("FixedVector construction and destruction") {
+TEST_CASE("fl::FixedVector construction and destruction") {
     FASTLED_USING_NAMESPACE;
     
     static int live_object_count = 0;
@@ -172,7 +172,7 @@ TEST_CASE("FixedVector construction and destruction") {
         REQUIRE_EQ(0, live_object_count);
         live_object_count = 0;
         {
-            FixedVector<TestObject, 3> vec;
+            fl::FixedVector<TestObject, 3> vec;
             CHECK(live_object_count == 0);
 
             vec.push_back(TestObject(1));
@@ -191,7 +191,7 @@ TEST_CASE("FixedVector construction and destruction") {
     SUBCASE("Clear") {
         live_object_count = 0;
         {
-            FixedVector<TestObject, 3> vec;
+            fl::FixedVector<TestObject, 3> vec;
             vec.push_back(TestObject(1));
             vec.push_back(TestObject(2));
 
@@ -207,7 +207,7 @@ TEST_CASE("FixedVector construction and destruction") {
 
 TEST_CASE("Fixed vector advanced") {
     FASTLED_USING_NAMESPACE;
-    FixedVector<int, 5> vec;
+    fl::FixedVector<int, 5> vec;
 
     SUBCASE("Pop back") {
         vec.push_back(10);
@@ -277,7 +277,7 @@ TEST_CASE("Fixed vector with custom type") {
         bool operator==(const Point& other) const { return x == other.x && y == other.y; }
     };
 
-    FixedVector<Point, 3> vec;
+    fl::FixedVector<Point, 3> vec;
 
     SUBCASE("Push and access custom type") {
         vec.push_back(Point(1, 2));
@@ -298,5 +298,80 @@ TEST_CASE("Fixed vector with custom type") {
         CHECK(it != vec.end());
         CHECK(it->x == 3);
         CHECK(it->y == 4);
+    }
+}
+
+
+TEST_CASE("SortedVector") {    
+    struct Less {
+        bool operator()(int a, int b) const { return a < b; }
+    };
+    
+
+
+    SUBCASE("Insert maintains order") {
+        SortedHeapVector<int, Less> vec(5);
+        vec.insert(3);
+        vec.insert(1);
+        vec.insert(4);
+        vec.insert(2);
+
+        CHECK(vec.size() == 4);
+        CHECK(vec[0] == 1);
+        CHECK(vec[1] == 2);
+        CHECK(vec[2] == 3);
+        CHECK(vec[3] == 4);
+    }
+
+    SUBCASE("Erase removes element") {
+        SortedHeapVector<int, Less> vec(5);
+        vec.insert(3);
+        vec.insert(1);
+        vec.insert(4);
+        vec.insert(2);
+        
+        vec.erase(3);  // Remove the value 3
+        
+        CHECK(vec.size() == 3);
+        CHECK_FALSE(vec.has(3));  // Verify 3 is no longer present
+        
+        // Verify remaining elements are still in order
+        CHECK(vec[0] == 1);
+        CHECK(vec[1] == 2);
+        CHECK(vec[2] == 4);
+    }
+
+    SUBCASE("Insert when full") {
+        SortedHeapVector<int, Less> vec(5);
+        // Fill the vector to capacity
+        vec.insert(1);
+        vec.insert(2);
+        vec.insert(3);
+        vec.insert(4);
+        vec.insert(5);  // Capacity is 5
+        
+        bool result = vec.insert(6);  // Try to insert into full vector
+        
+        CHECK_FALSE(result);  // Should return false
+        CHECK(vec.size() == 5);  // Size shouldn't change
+        CHECK(vec[4] == 5);  // Last element should still be 5
+    }
+
+    SUBCASE("Erase from empty") {
+        SortedHeapVector<int, Less> vec(5);
+        bool ok = vec.erase(1);  // Try to erase from empty vector
+        CHECK(!ok);  // Should return false
+        CHECK(vec.size() == 0);  // Should still be empty
+        CHECK(vec.empty());
+
+        ok = vec.erase(vec.end());
+        CHECK(!ok);  // Should return false
+        CHECK(vec.size() == 0);  // Should still be empty
+        CHECK(vec.empty());
+
+        ok = vec.erase(vec.begin());
+        CHECK(!ok);  // Should return false
+        CHECK(vec.size() == 0);  // Should still be empty
+        CHECK(vec.empty());
     }
 }

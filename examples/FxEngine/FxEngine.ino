@@ -9,7 +9,7 @@
 #include "fx/2d/animartrix.hpp"
 #include "fx/fx_engine.h"
 #include "fx/storage/sd.h"
-#include "ui.h"
+#include "fl/ui.h"
 
 #define LED_PIN 2
 #define BRIGHTNESS 96
@@ -42,7 +42,7 @@ void setup() {
     delay(1000); // sanity delay
     FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS)
         .setCorrection(TypicalLEDStrip)
-        .setScreenCoords(MATRIX_WIDTH, MATRIX_HEIGHT);
+        .setScreenMap(MATRIX_WIDTH, MATRIX_HEIGHT);
     FastLED.setBrightness(96);
     noisePalette.lazyInit();
     noisePalette.setPalettePreset(2);

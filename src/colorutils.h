@@ -7,7 +7,7 @@
 #include "FastLED.h"
 #include "pixeltypes.h"
 #include "fastled_progmem.h"
-#include "xymap.h"
+#include "fl/xymap.h"
 
 #if !defined(FASTLED_USE_32_BIT_GRADIENT_FILL)
   #if defined(__AVR__)
@@ -546,7 +546,7 @@ void blur1d( CRGB* leds, uint16_t numLeds, fract8 blur_amount);
 /// @param width the width of the matrix
 /// @param height the height of the matrix
 /// @param blur_amount the amount of blur to apply
-void blur2d( CRGB* leds, uint8_t width, uint8_t height, fract8 blur_amount, const XYMap& xymap);
+void blur2d( CRGB* leds, uint8_t width, uint8_t height, fract8 blur_amount, const fl::XYMap& xymap);
 
 
 /// Perform a blur1d() on every row of a rectangular matrix
@@ -555,11 +555,11 @@ void blur2d( CRGB* leds, uint8_t width, uint8_t height, fract8 blur_amount, cons
 /// @param width the width of the matrix
 /// @param height the height of the matrix
 /// @param blur_amount the amount of blur to apply
-void blurRows( CRGB* leds, uint8_t width, uint8_t height, fract8 blur_amount, const XYMap& xymap);
+void blurRows( CRGB* leds, uint8_t width, uint8_t height, fract8 blur_amount, const fl::XYMap& xymap);
 
 /// Perform a blur1d() on every column of a rectangular matrix
 /// @copydetails blurRows()
-void blurColumns(CRGB* leds, uint8_t width, uint8_t height, fract8 blur_amount, const XYMap& xymap);
+void blurColumns(CRGB* leds, uint8_t width, uint8_t height, fract8 blur_amount, const fl::XYMap& xymap);
 
 /// @} ColorBlurs
 
@@ -753,7 +753,7 @@ public:
     CHSVPalette16( const TProgmemHSVPalette16& rhs)
     {
         for( uint8_t i = 0; i < 16; ++i) {
-            CRGB xyz   =  FL_PGM_READ_DWORD_NEAR( rhs + i);
+            CRGB xyz(FL_PGM_READ_DWORD_NEAR( rhs + i));
             entries[i].hue = xyz.red;
             entries[i].sat = xyz.green;
             entries[i].val = xyz.blue;
@@ -764,7 +764,7 @@ public:
     CHSVPalette16& operator=( const TProgmemHSVPalette16& rhs)
     {
         for( uint8_t i = 0; i < 16; ++i) {
-            CRGB xyz   =  FL_PGM_READ_DWORD_NEAR( rhs + i);
+            CRGB xyz(FL_PGM_READ_DWORD_NEAR( rhs + i));
             entries[i].hue = xyz.red;
             entries[i].sat = xyz.green;
             entries[i].val = xyz.blue;
@@ -1337,7 +1337,7 @@ public:
     CHSVPalette32( const TProgmemHSVPalette32& rhs)
     {
         for( uint8_t i = 0; i < 32; ++i) {
-            CRGB xyz   =  FL_PGM_READ_DWORD_NEAR( rhs + i);
+            CRGB xyz(FL_PGM_READ_DWORD_NEAR( rhs + i));
             entries[i].hue = xyz.red;
             entries[i].sat = xyz.green;
             entries[i].val = xyz.blue;
@@ -1347,7 +1347,7 @@ public:
     CHSVPalette32& operator=( const TProgmemHSVPalette32& rhs)
     {
         for( uint8_t i = 0; i < 32; ++i) {
-            CRGB xyz   =  FL_PGM_READ_DWORD_NEAR( rhs + i);
+            CRGB xyz(FL_PGM_READ_DWORD_NEAR( rhs + i));
             entries[i].hue = xyz.red;
             entries[i].sat = xyz.green;
             entries[i].val = xyz.blue;

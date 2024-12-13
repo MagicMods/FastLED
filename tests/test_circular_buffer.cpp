@@ -1,13 +1,14 @@
 
 // g++ --std=c++11 test.cpp
 
-#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "test.h"
 
-#include "doctest.h"
-#include "fx/detail/circular_buffer.h"
+#include "test.h"
+#include "fl/circular_buffer.h"
 
 #include "namespace.h"
-FASTLED_USING_NAMESPACE
+
+using namespace fl;
 
 TEST_CASE("circular_buffer basic operations") {
     CircularBuffer<int> buffer(5);
@@ -241,6 +242,7 @@ TEST_CASE("circular_buffer zero capacity") {
 }
 
 #endif  
+
 
 TEST_CASE("circular_buffer pop_back operation") {
     CircularBuffer<int> buffer(5);

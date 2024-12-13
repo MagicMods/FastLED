@@ -4,21 +4,19 @@
 
 #include "FastLED.h"
 #include "fx/fx2d.h"
-#include "ref.h"
+#include "fl/ptr.h"
 
-FASTLED_NAMESPACE_BEGIN
+namespace fl {
 
-FASTLED_SMART_REF(RedSquare);
+FASTLED_SMART_PTR(RedSquare);
 
-class RedSquare : public FxGrid {
+class RedSquare : public Fx2d {
   public:
     struct Math {
         template <typename T> static T min(T a, T b) { return a < b ? a : b; }
     };
 
-    RedSquare(XYMap xymap) : FxGrid(xymap) {}
-
-    void lazyInit() override {}
+    RedSquare(XYMap xymap) : Fx2d(xymap) {}
 
     void draw(DrawContext context) override {
         uint16_t width = getWidth();
@@ -42,7 +40,7 @@ class RedSquare : public FxGrid {
         }
     }
 
-    const char *fxName(int) const override { return "red_square"; }
+    fl::Str fxName() const override { return "red_square"; }
 };
 
-FASTLED_NAMESPACE_END
+}  // namespace fl

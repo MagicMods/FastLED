@@ -15,14 +15,14 @@
 #include "ripple.h"
 #include <FastLED.h>
 #include "detail.h"
-#include "screenmap.h"
-#include "math_macros.h"
-#include "json.h"
-#include "ui.h"
-#include "fixed_map.h"
+#include "fl/screenmap.h"
+#include "fl/math_macros.h"
+#include "fl/json.h"
+#include "fl/ui.h"
+#include "fl/map.h"
 
 #include "screenmap.json.h"
-#include "str.h"
+#include "fl/str.h"
 
 enum {
     BlackStrip = 0,
@@ -189,10 +189,10 @@ void setup() {
     CRGB* green_leds = leds[GreenStrip];
     CRGB* blue_leds = leds[BlueStrip];
 
-    FastLED.addLeds<WS2812, 2>(black_leds, lengths[BlackStrip]).setScreenCoords(black);
-    FastLED.addLeds<WS2812, 3>(green_leds, lengths[GreenStrip]).setScreenCoords(green);
-    FastLED.addLeds<WS2812, 1>(red_leds, lengths[RedStrip]).setScreenCoords(red);
-    FastLED.addLeds<WS2812, 4>(blue_leds, lengths[BlueStrip]).setScreenCoords(blue);
+    FastLED.addLeds<WS2812, 2>(black_leds, lengths[BlackStrip]).setScreenMap(black);
+    FastLED.addLeds<WS2812, 3>(green_leds, lengths[GreenStrip]).setScreenMap(green);
+    FastLED.addLeds<WS2812, 1>(red_leds, lengths[RedStrip]).setScreenMap(red);
+    FastLED.addLeds<WS2812, 4>(blue_leds, lengths[BlueStrip]).setScreenMap(blue);
 
     FastLED.show();
     net_init();

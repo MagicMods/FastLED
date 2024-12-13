@@ -1,12 +1,28 @@
 
+FastLED 3.9.5
+=============
+* Much of the new code has been moved into a namespace. This is now located in the fl/ directory.
+* Namespaces are now compiled in test to ensure they work correctly.
+* Many strict compiler warnings are now treated as errors during unit test. Fixes have been applied.
+* CLEDController::setEnabled(bool) now allows controllers to be selectively disabled/enabled. This is useful if you want to have multiple controller types mapped to the same pin and select which ones are active during runtime.
+* Attiny88 now under test.
+
+FastLED 3.9.4
+=============
+* Fixes some name collisions from users including a lot of libraries.
+* Other misc fixes.
+
+
 FastLED 3.9.3
 =============
 * Beta Release 3 for FastLED 4.0.0
-* ESP32C6 now supported with RMT5 driver. This chip does not use DMA and so must go through the non DMA path for RMT.
+* ESP32C6 now supported with RMT5 driver without workaround. This chip does not use DMA and so must go through the non DMA path for RMT.
 * RMT5 tweaks for ESP32
   * For non DMA memory boards like the ESP32, ESP32C3, ESP32C6 RMT will now double it's memory but only allow 4 RMT workers.
   * This was the behavior for the RMT4.X drivers.
   * This is done to reduce LED corruption when WIFI is enabled.
+* WS2812 now allows user overrides of it's timing values T1, T2, T3. This is to help debug timing issues on the new V5B of
+  this chipset. You can define FASTLED_WS2812_T1, FASTLED_WS2812_T2, FASTLED_WS2812_T3 before you include FastLED.
 
 FastLED 3.9.2
 =============

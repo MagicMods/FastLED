@@ -1,22 +1,27 @@
-/// @file    NoisePlusPalette.ino
-/// @brief   Demonstrates how to mix noise generation with color palettes on a
-/// 2D LED matrix
-/// @example NoisePlusPalette.ino
+/// @file    wasm.ino
+/// @brief   Demonstrates an advanced ino file with multiple effects and UI elements
+/// @author  Zach Vorhies
+///
+/// This sketch is fully compatible with the FastLED web compiler. To use it do the following:
+/// 1. Install Fastled: `pip install fastled`
+/// 2. cd into this examples page.
+/// 3. Run the FastLED web compiler at root: `fastled`
+/// 4. When the compiler is done a web page will open.
 
-// printf
+
 #include <stdio.h>
 #include <string>
 
 #include <FastLED.h>
 #include "fx/2d/noisepalette.hpp"
-#include "json.h"
-#include "slice.h"
+#include "fl/json.h"
+#include "fl/slice.h"
 #include "fx/fx_engine.h"
 
 #include "fx/2d/animartrix.hpp"
-#include "platforms/wasm/js.h"
+#include "fl/ui.h"
 
-#include "ui.h"
+using namespace fl;
 
 
 #define LED_PIN 3
@@ -70,6 +75,9 @@ CRGB leds[NUM_LEDS];
 XYMap xyMap = XYMap::constructRectangularGrid(MATRIX_WIDTH, MATRIX_HEIGHT);
 NoisePalette noisePalette = NoisePalette(xyMap);
 
+Title title("FastLED Wasm Demo");
+Description description("This example combines two features of FastLED to produce a remarkable range of effects from a relatively small amount of code.  This example combines FastLED's color palette lookup functions with FastLED's Perlin noise generator, and the combination is extremely powerful");
+
 Slider brightness("Brightness", 255, 0, 255);
 Checkbox isOff("Off", false);
 Slider speed("Noise - Speed", 15, 1, 50);
@@ -79,25 +87,31 @@ Slider scale( "Noise - Scale", 20, 1, 100);
 Button changePalette("Noise - Next Palette");
 Button changeFx("Switch between Noise & Animartrix");
 NumberField fxIndex("Animartrix - index", 0, 0, NUM_ANIMATIONS);
+Slider timeSpeed("Time Speed", 1, -10, 10, .1);
 
 Animartrix animartrix(xyMap, POLAR_WAVES);
 FxEngine fxEngine(NUM_LEDS);
 
 void setup() {
+    Serial.begin(115200);
+    Serial.println("Sketch setup");
     FastLED.addLeds<WS2811, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS)
         .setCorrection(TypicalLEDStrip)
-        .setScreenCoords(xyMap);
+        .setScreenMap(xyMap);
+    Serial.println("FastLED setup done");
     FastLED.setBrightness(brightness);
     //noisePalette.setSpeed(speed);
     noisePalette.setScale(scale);
     fxEngine.addFx(animartrix);
     fxEngine.addFx(noisePalette);
+    Serial.println("Sketch setup done");
 }
 
 void loop() {
     FastLED.setBrightness(!isOff ? brightness.as<uint8_t>() : 0);
     noisePalette.setSpeed(speed);
     noisePalette.setScale(scale);
+    fxEngine.setSpeed(timeSpeed);
 
     if (changeFx) {
         fxEngine.nextFx();
@@ -117,11 +131,6 @@ void loop() {
     if (fxIndex.value() != lastFxIndex) {
         lastFxIndex = fxIndex;
         animartrix.fxSet(fxIndex);
-    }
-
-    EVERY_N_MILLISECONDS(1000) {
-        printf("fastled running\r\n");
-        printf("Numberfield: %f\r\n", fxIndex.value());
     }
 
 

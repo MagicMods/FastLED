@@ -1,9 +1,9 @@
 
 // g++ --std=c++11 test.cpp
 
-#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "test.h"
 
-#include "doctest.h"
+#include "test.h"
 #include "platforms/wasm/compiler/Arduino.h"
 
 #include "namespace.h"

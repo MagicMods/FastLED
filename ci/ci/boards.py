@@ -30,6 +30,7 @@ class Board:
     )
     platform_packages: str | None = None
     framework: str | None = None
+    board_build_mcu: str | None = None
     board_build_core: str | None = None
     board_build_filesystem_size: str | None = None
     defines: list[str] | None = None
@@ -52,6 +53,8 @@ class Board:
             options.append(f"framework={self.framework}")
         if self.board_build_core:
             options.append(f"board_build.core={self.board_build_core}")
+        if self.board_build_mcu:
+            options.append(f"board_build.mcu={self.board_build_mcu}")
         if self.board_build_filesystem_size:
             options.append(
                 f"board_build.filesystem_size={self.board_build_filesystem_size}"
@@ -64,6 +67,10 @@ class Board:
     def __repr__(self) -> str:
         json_str = json.dumps(self.to_dictionary(), indent=4, sort_keys=True)
         return json_str
+
+    def __hash__(self) -> int:
+        data_str = self.__repr__()
+        return hash(data_str)
 
 
 ESP32DEV = Board(
@@ -90,17 +97,27 @@ ESP32_C2_DEVKITM_1 = Board(
 )
 
 ESP32_C3_DEVKITM_1 = Board(
-    board_name="esp32-c3-devkitm-1",
+    board_name="esp32c3",
+    real_board_name="esp32-c3-devkitm-1",
     platform=ESP32_IDF_5_1_PIOARDUINO,
 )
 
 ESP32_C6_DEVKITC_1 = Board(
-    board_name="esp32-c6-devkitc-1",
+    board_name="esp32c6",
+    real_board_name="esp32-c6-devkitc-1",
     platform=ESP32_IDF_5_1_PIOARDUINO,
 )
 
 ESP32_S3_DEVKITC_1 = Board(
-    board_name="esp32-s3-devkitc-1",
+    board_name="esp32s3",
+    real_board_name="esp32-s3-devkitc-1",
+    platform=ESP32_IDF_5_1_PIOARDUINO,
+)
+
+ESP32_S2_DEVKITM_1 = Board(
+    board_name="esp32s2",
+    real_board_name="esp32dev",
+    board_build_mcu="esp32s2",
     platform=ESP32_IDF_5_1_PIOARDUINO,
 )
 
@@ -119,6 +136,12 @@ XIAOBLESENSE_ADAFRUIT_NRF52 = Board(
     board_name="xiaoblesense_adafruit",
     platform="https://github.com/maxgerhardt/platform-nordicnrf52",
     platform_needs_install=True,  # Install platform package to get the boards
+)
+
+XIAOBLESENSE_NRF52 = Board(
+    board_name="xiaoblesense",
+    platform="https://github.com/maxgerhardt/platform-nordicnrf52",
+    platform_needs_install=True,
 )
 
 NRF52840 = Board(
@@ -159,6 +182,11 @@ MAPLE_MINI = Board(
     board_name="maple_mini",
     real_board_name="maple_mini_b20",
     platform="ststm32",
+)
+
+ATTINY88 = Board(
+    board_name="attiny88",
+    platform="atmelavr",
 )
 
 # ATtiny1604
@@ -203,9 +231,11 @@ ALL: list[Board] = [
     ESP32_C2_DEVKITM_1,
     ESP32_C3_DEVKITM_1,
     ESP32_C6_DEVKITC_1,
+    ESP32_S2_DEVKITM_1,
     ESP32_S3_DEVKITC_1,
     ESP32_H2_DEVKITM_1,
     ADA_FEATHER_NRF52840_SENSE,
+    XIAOBLESENSE_NRF52,
     RPI_PICO,
     RPI_PICO2,
     UNO_R4_WIFI,

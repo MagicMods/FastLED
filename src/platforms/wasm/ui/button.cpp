@@ -1,14 +1,16 @@
 
 #ifdef __EMSCRIPTEN__
 
-#include "json.h"
+#include "fl/json.h"
 #include "platforms/wasm/js.h"
 #include "ui_manager.h"
 #include "namespace.h"
 
+using namespace fl;
+
 FASTLED_NAMESPACE_BEGIN
 
-jsButton::jsButton(const char* name)
+jsButton::jsButton(const Str& name)
     : mPressed(false) {
     auto updateFunc = jsUiInternal::UpdateFunction(this, [](void* self, const FLArduinoJson::JsonVariantConst& value) {
         static_cast<jsButton*>(self)->updateInternal(value);
@@ -17,7 +19,7 @@ jsButton::jsButton(const char* name)
     auto toJsonFunc = jsUiInternal::ToJsonFunction(this, [](void* self, FLArduinoJson::JsonObject& json) {
         static_cast<jsButton*>(self)->toJson(json);
     });
-    mInternal = jsUiInternalRef::New(name, std::move(updateFunc), std::move(toJsonFunc));
+    mInternal = jsUiInternalPtr::New(name, std::move(updateFunc), std::move(toJsonFunc));
     jsUiManager::addComponent(mInternal);
     mUpdater.init(this);
 }
@@ -26,7 +28,7 @@ jsButton::~jsButton() {
     jsUiManager::removeComponent(mInternal);
 }
 
-const char* jsButton::name() const {
+const Str& jsButton::name() const {
     return mInternal->name();
 }
 
