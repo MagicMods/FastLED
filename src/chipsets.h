@@ -904,6 +904,10 @@ class UCS1912Controller : public ClocklessController<DATA_PIN, 2 * FMUL, 8 * FMU
 //  print("T2: ", T2)
 //  print("T3: ", T3)
 
+// 380 + 1600 = 1980
+// 1600 + 420 = 2020
+// 2020 - 380 - 1600 = 40
+
 
 // GE8822 - 350ns 660ns 350ns
 template <uint8_t DATA_PIN, EOrder RGB_ORDER = RGB>
@@ -957,11 +961,6 @@ class WS2813Controller : public ClocklessController<DATA_PIN, C_NS_WS2813(320), 
 #define FASTLED_WS2812_T3 375
 #endif
 
-// WS2818F - 300ns, 790ns, 490ns
-template <uint8_t DATA_PIN, EOrder RGB_ORDER = GRB>
-// class WS2818Controller : public ClocklessController<DATA_PIN, C_NS_WS2818(300), C_NS_WS2818(790), C_NS_WS2818(490), RGB_ORDER> {};
-class WS2818Controller : public ClocklessController<DATA_PIN, C_NS_WS2818(220), C_NS_WS2818(580), C_NS_WS2818(360), RGB_ORDER> {};
-
 // WS2812 - 250ns, 625ns, 375ns
 template <uint8_t DATA_PIN, EOrder RGB_ORDER = GRB>
 class WS2812Controller800Khz : public ClocklessController<
@@ -975,13 +974,47 @@ class WS2812Controller800Khz : public ClocklessController<
 template <uint8_t DATA_PIN, EOrder RGB_ORDER = GRB>
 class WS2811Controller400Khz : public ClocklessController<DATA_PIN, C_NS_WS2811(800), C_NS_WS2811(800), C_NS_WS2811(900), RGB_ORDER> {};
 
-
-
-
 template <uint8_t DATA_PIN, EOrder RGB_ORDER = GRB>
 class WS2815Controller : public ClocklessController<DATA_PIN, C_NS_WS2815(250), C_NS_WS2815(1090), C_NS_WS2815(550), RGB_ORDER> {};
 
-// 750NS, 750NS, 750NS
+// WS2818F - 380ns, 1000ns, 620ns
+// T0H = 220ns ~ 250ns ~ 380ns,
+// T1H = 580ns ~ 790ns ~ 1us,
+// T0L = 580ns ~ 790ns ~ 1us,
+// T1L = 580ns ~ 790ns ~ 1us,
+// RES > 280us
+
+// MIN T1 220 T2 580 T3 360
+// AVG T1 250 T2 790 T3 540
+// MAX T1 380 T2 1000 T3 620
+
+#ifndef FASTLED_WS2818_T1
+// #define FASTLED_WS2818_T1 220
+// #define FASTLED_WS2818_T1 250
+#define FASTLED_WS2818_T1 380
+#endif
+
+#ifndef FASTLED_WS2818_T2
+// #define FASTLED_WS2818_T2 580
+// #define FASTLED_WS2818_T2 790
+#define FASTLED_WS2818_T2 1000
+#endif
+
+#ifndef FASTLED_WS2818_T3
+// #define FASTLED_WS2818_T3 360
+// #define FASTLED_WS2818_T3 540
+#define FASTLED_WS2818_T3 620
+#endif
+
+// WS2818F - 380ns, 1000ns, 620ns
+template <uint8_t DATA_PIN, EOrder RGB_ORDER = GRB>
+class WS2818Controller : public ClocklessController<
+	DATA_PIN, 
+	C_NS_WS2818(FASTLED_WS2818_T1),
+    C_NS_WS2818(FASTLED_WS2818_T2),
+	C_NS_WS2818(FASTLED_WS2818_T3), 
+	RGB_ORDER> {};
+
 template <uint8_t DATA_PIN, EOrder RGB_ORDER = RGB>
 class TM1803Controller400Khz : public ClocklessController<DATA_PIN, C_NS(700), C_NS(1100), C_NS(700), RGB_ORDER> {};
 
