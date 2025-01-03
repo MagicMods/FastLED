@@ -2,7 +2,7 @@
 #include "fl/circular_buffer.h"
 #include "fx/video/pixel_stream.h"
 #include "fl/math_macros.h"
-#include "namespace.h"
+#include "fl/namespace.h"
 
 #include "fl/dbg.h"
 
@@ -15,7 +15,9 @@
 namespace fl {
 
 FrameInterpolator::FrameInterpolator(size_t nframes, float fps)
-    : mFrames(MAX(1, nframes)), mFrameTracker(fps) {
+    : mFrameTracker(fps) {
+    size_t capacity = MAX(1, nframes);
+    mFrames.setMaxSize(capacity);
 }
 
 bool FrameInterpolator::draw(uint32_t now, Frame *dst) {

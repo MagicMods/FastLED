@@ -2,7 +2,7 @@
 
 #include <stddef.h>
 
-/// @file controller.h
+/// @file cled_controller.h
 /// base definitions used by led controllers for writing out led data
 
 #include "FastLED.h"
@@ -11,11 +11,13 @@
 #include "color.h"
 
 #include "fl/force_inline.h"
+#include "fl/unused.h"
 #include "pixel_controller.h"
 #include "dither_mode.h"
 #include "pixel_iterator.h"
 #include "fl/engine_events.h"
 #include "fl/screenmap.h"
+#include "fl/virtual_if_not_avr.h"
 
 FASTLED_NAMESPACE_BEGIN
 
@@ -70,34 +72,32 @@ public:
     void setEnabled(bool enabled) { m_enabled = enabled; }
 
     CLEDController();
-    #if defined(FASTLED_TESTING)
-    // Silences the warning about the destructor not being virtual during testing.
+    // If we added virtual to the AVR boards then we are going to add 600 bytes of memory to the binary
+    // flash size. This is because the virtual destructor pulls in malloc and free, which are the largest
     // Testing shows that this virtual destructor adds a 600 bytes to the binary on
     // attiny85 and about 1k for the teensy 4.X series.
     // Attiny85:
     //   With CLEDController destructor virtual: 11018 bytes to binary.
     //   Without CLEDController destructor virtual: 10666 bytes to binary.
-    // Looking at the ELF/Map file, it appears that adding a virtual destructor to this
-    // base class not only adds vtables to the subclasses, but also pulls in malloc & free,
-    // which are by far the largest functions in binary size.
-    // Since we don't control how this library is compiled, the only thing we can do is
-    // carefully enable this virtual destructor for testing only and in the future, for boards
-    // that have enough space to handle the extra binary size.
-    virtual ~CLEDController();
-    #else
-    ~CLEDController();
-    #endif
+    VIRTUAL_IF_NOT_AVR ~CLEDController();
+
     Rgbw getRgbw() const { return mRgbMode; }
-
-
 
     /// Initialize the LED controller
     virtual void init() = 0;
 
     /// Clear out/zero out the given number of LEDs.
     /// @param nLeds the number of LEDs to clear
-    virtual void clearLeds(int nLeds = -1) {
+    VIRTUAL_IF_NOT_AVR void clearLeds(int nLeds = -1) {
         clearLedDataInternal(nLeds);
+        showLeds(0);
+    }
+
+    // Compatibility with the 3.8.x codebase.
+    VIRTUAL_IF_NOT_AVR void showLeds(uint8_t brightness) {
+        void* data = beginShowLeds(m_nLeds);
+        showLedsInternal(brightness);
+        endShowLeds(data);
     }
 
     ColorAdjustment getAdjustmentData(uint8_t brightness);
@@ -210,7 +210,8 @@ public:
     /// @return the currently set dithering option (CLEDController::m_DitherMode)
     inline uint8_t getDither() { return m_DitherMode; }
 
-    virtual void* beginShowLeds() {
+    virtual void* beginShowLeds(int size) {
+        FASTLED_UNUSED(size);
         // By default, emit an integer. This integer will, by default, be passed back.
         // If you override beginShowLeds() then
         // you should also override endShowLeds() to match the return state.
@@ -227,6 +228,7 @@ public:
         void* out = reinterpret_cast<void*>(d);
         return out;
     }
+
     virtual void endShowLeds(void* data) {
         // By default recieves the integer that beginShowLeds() emitted.
         //For async controllers this should be used to signal the controller

@@ -11,9 +11,10 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-24.04]
       fail-fast: false
     steps:
       - name: Checkout code
@@ -25,8 +26,28 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install UV for python
-        run: pip install uv
+      - name: Easter Egg! 🐇🥚
+        run: |
+          echo -e "\nHi if you are reading this then you are probably a cut above the rest."
+          echo "Therefore you are invited to test out our beta release of the Fastled Compiler!"
+          echo "Now you can compile FastLED sketch so that it runs... in the BROWSER!"
+          echo "Why would we do such a thing? BECAUSE COMPILE TIMES ARE INSANELY FAST!!!!"
+          echo "The install is just one line of code: 'pip install fastled'"
+          echo "Then run it on your favorite sketch: 'fastled mysketch'"
+          echo "Almost all of the FastLED sketches are already supported!"
+          echo "To find out more, visit the project github: https://github.com/zackees/fastled-wasm"
+          echo "Or check the demo: https://zackees.github.io/fastled-wasm/"
+          echo "Happy coding! - Zach Vorhies"
+
+      - name: Install UV for python and npm packages
+        run: |
+          pip install uv
+          npm install -g live-server
+
+      - name: Verify live-server installation
+        run: |
+          which live-server || (echo "live-server not found in PATH" && exit 1)
+          live-server --version
 
       - name: Compile fastled.js, fastled.wasm, and index.html
         run: |
@@ -61,67 +82,8 @@ jobs:
           path: examples/wasm/fastled_js/*.*
           if-no-files-found: ${{ matrix.os == 'ubuntu-latest' && 'error' || 'ignore' }}
 
-      - name: Install Playwright and verify FastLED_onFrame
+      - name: Verify FastLED_onFrame with Playwrite
         run: |
-          npm init -y
-          npm install playwright
-          npm install http-server
-          npx playwright install chromium
-          
-          # Find an available port
-          PORT=$(node -e "
-            const net = require('net');
-            const server = net.createServer();
-            server.listen(0, () => {
-              console.log(server.address().port);
-              server.close();
-            });
-          ")
-          echo "Using port: $PORT"
-          
-          # Start http-server with the dynamic port
-          npx http-server examples/wasm/fastled_js -p $PORT &
-          SERVER_PID=$!
-          
-          # Wait for the server to start
-          sleep 5
-          
-          node -e "
-            const { chromium } = require('playwright');
-            (async () => {
-              const browser = await chromium.launch();
-              const page = await browser.newPage();
-              try {
-                await page.goto('http://localhost:${PORT}', { timeout: 30000 });
-                page.on('console', msg => {
-                  if (msg.text().includes('INVALID_OPERATION')) {
-                    console.error('INVALID_OPERATION detected in console log');
-                    process.exit(1);
-                  }
-                });
-                await page.evaluate(() => {
-                  window.frameCallCount = 0;
-                  globalThis.FastLED_onFrame = (jsonStr) => {
-                    console.log('FastLED_onFrame called with:', jsonStr);
-                    window.frameCallCount++;
-                  };
-                });
-                await page.waitForTimeout(5000);
-                const callCount = await page.evaluate(() => window.frameCallCount);
-                if (callCount > 0) {
-                  console.log('Success: FastLED.js was initialized and FastLED_onFrame was called', callCount, 'times');
-                } else {
-                  console.error('Error: FastLED.js had something go wrong and FastLED_onFrame was not called within 5 seconds');
-                  process.exit(1);
-                }
-              } catch (error) {
-                console.error('An error occurred:', error);
-                process.exit(1);
-              } finally {
-                await browser.close();
-                process.kill(${SERVER_PID});
-              }
-            })();
-          "
+          uv run ci/wasm_test.py
         continue-on-error: ${{ matrix.os != 'ubuntu-latest' }}
 

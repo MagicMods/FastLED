@@ -1,11 +1,120 @@
+FastLED 3.9.8 - FastLED now supports 27.5k pixels and more, on the Teensy 4.x
+=============
+* FastLED 3.9.8 is the 7th beta release of FastLED 4.0
+* We are introducing the new beta release of a *Massive Parallel mode* for Teensy 4.0/4.1 for you to try out!
+  * Made possible by Kurt Funderburg's excellent ObjectFLED driver!
+    * Check out his stand alone driver: https://github.com/KurtMF/ObjectFLED
+    * And give him a star on his repo, this is INCREDIBLE WORK!
+  * This will allow you to drive
+    * Teensy 4.1: 50 strips of WS2812 - 27,500 pixels @ 60fps!!
+      * ~36k pixels at 30% overclock (common)
+      * ~46k pixels at 70% overclock (highest end WS2812)
+    * Teensy 4.0: 40 strips of WS2812 - 22,000 pixels @ 60fps.
+  * The Teensy 4.x series is a **absolute** LED driving beast!
+  * This driver is async, so you can prepare the next frame while the current frame draws.
+  * Sketch Example: [https://github.com/FastLED/FastLED/blob/master/examples/TeensyMassiveParallel/TeensyMassiveParallel.ino](https://github.com/FastLED/FastLED/blob/master/examples/TeensyMassiveParallel/TeensyMassiveParallel.ino)
+  * It's very simple to turn on:
+    * `#define FASTLED_USES_OBJECTFLED`
+    * `#include "FastLED.h"` - that's it! No other changes necessary!
+  * Q/A:
+    * Is anything else supported other than WS2812? - Not at this moment. As far as I know, all strips on this bulk controller **must** use the same
+      timings. Because of the popularity of WS2812, it is enabled for this controller first. I will add support for other controllers based on the number of feature requests for other WS281x chipsets.
+    * Is overclocking supported? Yes, and it binds to the current overclock `#define FASTLED_OVERCLOCK 1.2` @ a 20% overlock.
+    * Have you tested this? Very lightly in FastLED, but Kurt has done his own tests and FastLED just provides some wrappers to map it to our familiar and easy api.
+    * How does this compare to the stock LED driver on Teensy for just one strip? Better and way less random light flashes. For some reason the stock Teensy WS2812 driver seems to produce glitches, but with the ObjectFLED driver seems to fix this.
+    * Will this become the default driver on Teensy 4.x? Yes, in the next release, unless users report problems.
+    * Is RGBW supported? Yes - all FastLED RGBW modes are supported.
+    * Can other non WS281x chipsets be supported? It appears so, as ObjectFLED does have flexible timings that make it suitable for other clockless chipsets.
+    * Does this consume a lot of memory? Yes. ObjectFLED expects a rectangular pixel buffer and this will be generated automatically. This buffer will then be converted into a DMA memory block. However, this shouldn't be that big of a problem as the Teensy 4.x features a massive amount of memory.
+* Other Changes
+  * ESP32 - bug fixes for RMT5 no recycle mode. This is now the default and addresses the "green led stuck on" issue that some people are facing with ESP-WROOM-32. We also saw it in one bug report for ESP32-S3, so we are going to just enable it everywhere.
+    * If you absolutely need the extra controllers because you have more strips than RMT controllers, then you can re-enable recycle mode with:
+      * `#define FASTLED_RMT5_RECYCLE=1` before `#include "FastLED.h"`
+* Arduino Cloud compile fixes
+  * ESP328622 has an additional compile fix for the in-place new operator. Arduino Cloud compiler uses an ancient gcc compiler version which is missing the __has_include that we use to determine if FastLED needs to define a missing in-place new operator.
+* Internal stuff
+  * `FASTLED_ASSERT(true/false, MSG)` now implemented on ESP32, other platforms will just call `FASTLED_WARN(MSG)` and not abort. Use it via `#include fl/assert.h`. Be careful because on ESP32 it will absolutely abort the program, even in release. This may change later.
+
+
+FastLED 3.9.7
+=============
+* ESP32:
+  * Okay final fix for the green led that's been stuck on. It turns out in 3.9.6 I made a mistake and swapped the RMT recycle vs no recycle. This should now be corrected. To get the old behavior back use `#define FASTLED_RMT5_RECYCLE=1`. The new behavior may become the default if it turns out this is more stable.
+* Arduino Cloud Compiler: This should now work ancient compiler toolchains that they use for some of the older ESP boards. Despite the fact that two bugs were fixed in the last release, another one cropped up in 3.9.6 for extremely old idf toolchians which defines digitalRead/digitalWrite not as functions, but as macros.
+
+
+FastLED 3.9.6
+=============
+* ESP32:
+  * Sticky first green LED on the chain has been fixed. It turned out to be aggressive RMT recycling. We've disabled this for now and filed a bug:
+      * https://github.com/FastLED/FastLED/issues/1786
+      * https://github.com/FastLED/FastLED/issues/1761
+      * https://github.com/FastLED/FastLED/issues/1774
+* Bug fix for FastLED 3.9.5
+  * Fixes using namespace fl in `FastLED.h` in the last release (oops!)
+* Fixes for Arduino Cloud compiler and their ancient version of esp-idf for older chips.
+  * Handle missing `IRAM_ATTR`
+  * inplace new operator now is smarter about when to be defined by us.
 
 FastLED 3.9.5
 =============
-* Much of the new code has been moved into a namespace. This is now located in the fl/ directory.
-* Namespaces are now compiled in test to ensure they work correctly.
-* Many strict compiler warnings are now treated as errors during unit test. Fixes have been applied.
-* CLEDController::setEnabled(bool) now allows controllers to be selectively disabled/enabled. This is useful if you want to have multiple controller types mapped to the same pin and select which ones are active during runtime.
-* Attiny88 now under test.
+
+* Esp32:
+  * There's a bug in the firmware of some ESP32's where the first LED is green/blue/red, though we haven't be able to reproduce it.
+  * This may be manifesting because of our RMT recycling. We offer a new RMT5 variant that may fix this.
+    * Here's how you enable it: use `#define FASTLED_RMT5_RECYCLE=0` before you `#include "FastLED.h"`
+    * If this works then please let us know either on reddit or responding to our bug entries:
+      * https://github.com/FastLED/FastLED/issues/1786
+      * https://github.com/FastLED/FastLED/issues/1761
+      * https://github.com/FastLED/FastLED/issues/1774
+* ESP32C6
+  * This new board had some pins marked as invalid. This has been fixed.
+* ESP32S2
+  * The correct SPI chipset (FSPI, was VSPI) is now used when `FASTLED_ALL_PINS_HARDWARE_SPI` is active.
+* The previous headers that were in src/ now have a stub that will issue a deprecation warning and instructions to fix, please migrated before 4.0 as the deprecated headers will go away.
+* Many many strict compiler warnings are now treated as errors during unit test. Many fixes in the core have been applied.
+* CLEDController::setEnabled(bool) now allows controllers to be selectively disabled/enabled. This is useful if you want to have multiple controller types mapped to the same pin and select which ones are active during runtime, or to shut them off for whatever reason.
+* Attiny88 is now under test.
+* CLEDController::clearLeds() again calls showLeds(0)
+* Completely remove Json build artifacts for avr, fixes compiler error for ancient avr-gcc versions.
+* Namespaces: `fl` - the new FastLED namespace
+  * Much of the new code in 3.9.X has been moved into the `fl` namespace. This is now located in the `fl/` directory. These files have mandatory namespaces but most casual users won't care because because all the files in the `fl/` directory are for internal core use.
+  * Namespaces for the core library are now enabled in internal unit tests to ensure they work correctly for the power users that need them. Enabling them requires a build-level define. (i.e. every build system except ArduinoIDE supports this) you can use it putting in this build flag: `-DFASTLED_NAMESPACE=1`. This will force it on for the entire FastLED core.
+  * We are doing this because we keep getting conflicts with our files and classes conflict with power users who have lots of code.The arduino build system likes to put all the headers into the global space so the chance of collisions goes up dramatically with the number of dependencies one has and we are tired of playing wack a mole with fixing this.
+    * Example: https://github.com/FastLED/FastLED/issues/1775
+* Stl-like Containers: We have some exciting features coming up for you. In this release we are providing some of the containers necessary for complex embedded black-magic.
+  * `fl::Str`: a copy on write String with inlined memory, which overflows to the heap after 64 characters. Lightning fast to copy around and keep your characters on the stack and prevent heap allocation. Check it out in `fl/str.h`. If 64 characters is too large for your needs then you can change it with a build-level define.
+  * `fl/vector.h`:
+    * `fl::FixedVector`: Inlined vector which won't ever overflow.
+    * `fl::HeapVector`: Do you need overflow in your vector or a drop in replacement for `std::vector`? Use this.
+    * `fl::SortedHeapVector`: If you want to have your items sorted, use this. Inserts are O(n) always right now, however with deferred sorting, it could be much faster. Use `fl::SortedHeapVector::setMaxSize(int)` to keep it from growing.
+  * `fl/map.h`
+    * `fl::SortedHeapMap`: Almost a drop in replacement for `std::map`. It differs from the `fl::SortedHeapVector` because this version works on key/value pairs. Like `std::map` this takes a comparator which only applies to the keys.
+    * `fl::FixedMap`: Constant size version of `fl::SortedHeapMap` but keeps all the elements inlined and never overflows to the heap.
+  * `fl/set.h`
+    * `fl::FixedSet`: Similar to an `std::set`. Never overflows and all the memory is inlined. Ever operation is O(N) but the inlined nature means it will beat out any other set as long as you keep it small.
+  * `fl/scoped_ptr.h`:
+    * `fl::scoped_ptr.h`:
+      * Similar to `std::unique_ptr`, this allows you to manage a pointer type and have it automatically destructed.
+    * `fl::scoped_array.h`: Same thing but for arrays. Supports `operator[]` for array like access.
+  * `fl/slice.h`: Similar to an `std::span`, this class will allow you to pass around arrays of contigious memory. You can `pop_front()` and `pop_back()`, but it doesn't own the memory so nothing will get deleted.
+  * `fl/ptr.h`
+    * `fl::Ptr<T>`, a ref counted intrusive shared pointer. "Intrusive" means the referent is inside the class the pointer refers to, which prevents an extra allocation on the heap. It's harder to use than `std::shared_ptr` because it's extremely strict and will not auto-covert a raw pointer into this Ptr type without using `Ptr<T>::TakeOwnership(T*)`. This is done to prevent objects from double deletion. It can also take in pointers to stack/static objects with `Ptr<T>::NoTracking(T*)`, which will disable reference counter but still allow you use
+* Blur effects no longer link to the int XY(int x, int y) function which is assumed to exist in your sketch. This has been the bane of existance for those that encounter it. Now all functions that linked to XY() now take in a `fl::XYMap` which is the class
+  form of this. This also means that you can apply blur effects with multiple led panels, where XY() assumed you just had only one array of leds.
+* Sensors
+  * PIR (passife infrared) sensors are one of the staples of LED effects. They are extremely good at picking up movement anywhere and are extremely cheap. They are also extremely easy to use with only one pin, besides the power rails. I've used them countless times for nearly all my LED effects. Therefore I've added two PIR sensors for you to play around with.
+    * `sensors/pir.h`
+      * `fl::Pir`: This is a basic PIR that will tell you if the sensor is curently triggered. It doesn't do much else.
+      * `fl::AdvancedPir`: An extended version of `fl::Pir` which gives transition effects as it turns on and off. Here is what the
+        the constructor looks like: `fl::PirAdvanced(int pin, uint32_t latchMs = 5000, uint32_t risingTime = 1000, uint32_t fallingTime = 1000)`.
+        You will give it the pin, an optional latch time (how long it stays on for), the rising time (how long to go from off to on) and the falling
+        time which is how long it takes to go from on to off. By default it will ramp on for one second, stay on for 5 seconds at full brightness, then
+        start turning off for one second. All you have to do is give it the current `millis()` value.
+      * To see it in action check out `examples/fx/NoiseRing`
+* AVR
+  * The Atmega family and 32u now has a maximum of 16 controllers that can be active, up from 8, due to these models having more memory. Someone actually needed this, suprisingly.
+* The 4.0 release is getting closer. We have some exciting stuff on the horizon that I can't wait to show you! Happy Coding! ~Zach
 
 FastLED 3.9.4
 =============

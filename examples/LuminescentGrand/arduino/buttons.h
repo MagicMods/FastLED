@@ -117,7 +117,7 @@ class CountingButton {
       return;
     }
 
-    if (val != on_) {  // Has the toggle switch changed?
+    if (changed) {  // Has the toggle switch changed?
       on_ = val;       // Set the new toggle switch value.
       // Protect against debouncing artifacts by putting a 200ms delay from the
       // last time the value changed.
@@ -137,13 +137,11 @@ class CountingButton {
   	return button_.Read();
   }
  
+  DigitalButton button_;
   bool on_;
   int curr_val_;
-
- public:
-  DigitalButton button_;
   unsigned long debounce_timestamp_;
-  Button mButton = Button("Counting Button");
+  UIButton mButton = UIButton("Counting UIButton");
 };
 
 class ColorSelector {

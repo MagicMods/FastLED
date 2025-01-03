@@ -2,10 +2,20 @@
 
 // This file must not be in the fl namespace, it must be in the global namespace.
 
-#if __has_include(<new>)
-#include <new>
+#if defined(__AVR__) || !defined(__has_include)
+#ifndef __has_include
+#define _NO_EXCEPT
 #else
-inline void* operator new(size_t, void* ptr) noexcept {
+#define _NO_EXCEPT noexcept
+#endif
+inline void* operator new(size_t, void* ptr) _NO_EXCEPT {
     return ptr;
 }
+#elif __has_include(<new>)
+#include <new>
+#elif __has_include(<new.h>)
+#include <new.h>
+#elif __has_include("new.h")
+#include "new.h"
 #endif
+

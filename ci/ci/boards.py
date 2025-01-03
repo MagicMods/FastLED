@@ -8,6 +8,9 @@ from dataclasses import dataclass
 
 # Set to a specific release, we may want to update this in the future.
 ESP32_IDF_5_1_PIOARDUINO = "https://github.com/pioarduino/platform-espressif32/releases/download/51.03.04/platform-espressif32.zip"
+
+# TODO: Upgrade toolkit to 5.3
+ESP32_IDF_5_3_PIOARDUINO = "https://github.com/pioarduino/platform-espressif32/releases/download/53.03.10/platform-espressif32.zip"
 ESP32_IDF_5_1_PIOARDUINO_LATEST = (
     "https://github.com/pioarduino/platform-espressif32.git#develop"
 )
@@ -75,13 +78,20 @@ class Board:
 
 ESP32DEV = Board(
     board_name="esp32dev",
-    platform=ESP32_IDF_5_1_PIOARDUINO_LATEST,
+    platform=ESP32_IDF_5_3_PIOARDUINO,
 )
 
 ESP32DEV_IDF4_4 = Board(
     board_name="esp32dev_idf44",
     real_board_name="esp32dev",
     platform=ESP32_IDF_4_4_LATEST,
+)
+
+GIGA_R1 = Board(
+    board_name="giga_r1",
+    platform="ststm32",
+    framework="arduino",
+    real_board_name="giga_r1_m7",
 )
 
 # ESP01 = Board(
@@ -99,32 +109,32 @@ ESP32_C2_DEVKITM_1 = Board(
 ESP32_C3_DEVKITM_1 = Board(
     board_name="esp32c3",
     real_board_name="esp32-c3-devkitm-1",
-    platform=ESP32_IDF_5_1_PIOARDUINO,
+    platform=ESP32_IDF_5_3_PIOARDUINO,
 )
 
 ESP32_C6_DEVKITC_1 = Board(
     board_name="esp32c6",
     real_board_name="esp32-c6-devkitc-1",
-    platform=ESP32_IDF_5_1_PIOARDUINO,
+    platform=ESP32_IDF_5_3_PIOARDUINO,
 )
 
 ESP32_S3_DEVKITC_1 = Board(
     board_name="esp32s3",
     real_board_name="esp32-s3-devkitc-1",
-    platform=ESP32_IDF_5_1_PIOARDUINO,
+    platform=ESP32_IDF_5_3_PIOARDUINO,
 )
 
 ESP32_S2_DEVKITM_1 = Board(
     board_name="esp32s2",
     real_board_name="esp32dev",
     board_build_mcu="esp32s2",
-    platform=ESP32_IDF_5_1_PIOARDUINO,
+    platform=ESP32_IDF_5_3_PIOARDUINO,
 )
 
 ESP32_H2_DEVKITM_1 = Board(
     board_name="esp32-h2-devkitm-1",
     platform_needs_install=True,  # Install platform package to get the boards
-    platform=ESP32_IDF_5_1_PIOARDUINO_LATEST,
+    platform=ESP32_IDF_5_3_PIOARDUINO,
 )
 
 ADA_FEATHER_NRF52840_SENSE = Board(
@@ -216,7 +226,7 @@ ESP32S3_RMT51 = Board(
     board_name="esp32rmt_51",
     real_board_name="esp32-s3-devkitc-1",
     platform_needs_install=True,
-    platform=ESP32_IDF_5_1_PIOARDUINO,
+    platform=ESP32_IDF_5_3_PIOARDUINO,
     defines=[
         "FASTLED_RMT5=1",
     ],
@@ -245,6 +255,7 @@ ALL: list[Board] = [
     BLUEPILL,
     MAPLE_MINI,
     NRF52840,
+    GIGA_R1,
 ]
 
 

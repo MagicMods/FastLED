@@ -15,13 +15,16 @@
 #include "fl/dbg.h"
 #include "fl/ui.h"
 
+using namespace fl;
+
 
 #define CHIPSET WS2812
-#define PIN_LEDS 0
+#define PIN_DATA 1
+#define PIN_CLOCK 2
 
 namespace {
 
-Button buttonAllWhite("All white");
+UIButton buttonAllWhite("All white");
 
 ScreenMap init_screenmap() {
   LedColumns cols = LedLayoutArray();
@@ -50,10 +53,7 @@ ScreenMap init_screenmap() {
 ///////////////////////////////////////////////////////////////////////////////
 void LedRopeTCL::PreDrawSetup() {
   if (!lazy_initialized_) {
-
-    lazy_initialized_ = false;
-    int num_leds = frame_buffer_.length();
-
+    // This used to do something, now it does nothing.
     lazy_initialized_ = true;
   }
 }
@@ -80,7 +80,6 @@ void LedRopeTCL::RawDrawPixel(byte r, byte g, byte b) {
     b = 0xff;
   }
   CRGB c(r, g, b);
-  size_t idx = led_buffer_.size();
   led_buffer_.push_back(CRGB(r, g, b));
 }
 
@@ -103,14 +102,14 @@ void LedRopeTCL::RawCommitDraw() {
     controller_added_ = true;
     CRGB* leds = led_buffer_.data();
     size_t n_leds = led_buffer_.size();
-    FastLED.addLeds<WS2812, PIN_LEDS>(leds, n_leds).setScreenMap(mScreenMap);
+    FastLED.addLeds<APA102, PIN_DATA, PIN_CLOCK>(leds, n_leds).setScreenMap(mScreenMap);
   }
   FastLED.show();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 LedRopeTCL::LedRopeTCL(int n_pixels)
-	: frame_buffer_(n_pixels), draw_offset_(0), lazy_initialized_(false) {
+	: draw_offset_(0), lazy_initialized_(false), frame_buffer_(n_pixels) {
   mScreenMap = init_screenmap();
   led_buffer_.reserve(mScreenMap.getLength());
 }

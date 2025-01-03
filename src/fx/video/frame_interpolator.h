@@ -4,7 +4,7 @@
 #include "fx/video/pixel_stream.h"
 #include "fx/frame.h"
 #include "fx/video/frame_tracker.h"
-#include "namespace.h"
+#include "fl/namespace.h"
 
 namespace fl {
 
@@ -32,7 +32,9 @@ class FrameInterpolator : public fl::Referent {
     bool draw(uint32_t adjustable_time, Frame *dst);
     bool draw(uint32_t adjustable_time, CRGB *leds);
     bool insert(uint32_t frameNumber, FramePtr frame) {
-        return mFrames.insert(frameNumber, frame);
+        InsertResult result;
+        mFrames.insert(frameNumber, frame, &result);
+        return result != InsertResult::kMaxSize;
     }
 
     // Clear all frames

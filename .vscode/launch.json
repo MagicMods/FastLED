@@ -25,8 +25,8 @@
             "type": "platformio-debug",
             "request": "launch",
             "name": "Launch(gdb)",
-            "program": "tests/.build/bin/${fileBasenameNoExtension}",
-            "cwd": "${workspaceRoot}"
+            "program": "tests/.build/bin/",
+            "cwd": ""
         }
     ]
 }

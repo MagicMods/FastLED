@@ -1,3 +1,5 @@
+/// @file pixel_iterator.h
+/// Non-templated low level pixel data writing class
 
 #pragma once
 
@@ -5,7 +7,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "namespace.h"
+#include "fl/namespace.h"
 #include "rgbw.h"
 
 #include "crgb.h"

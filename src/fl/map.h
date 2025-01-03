@@ -3,11 +3,21 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include "namespace.h"
+#include "fl/namespace.h"
 #include "fl/vector.h"
 #include "fl/template_magic.h"
+#include "fl/insert_result.h"
+#include "fl/pair.h"
 
 namespace fl {
+
+template<typename T>
+struct DefaultLess {
+    bool operator()(const T& a, const T& b) const {
+        return a < b;
+    }
+};
+
 
 // A simple unordered map implementation with a fixed size.
 // The user is responsible for making sure that the inserts
@@ -17,13 +27,9 @@ namespace fl {
 template<typename Key, typename Value, size_t N>
 class FixedMap {
 public:
-    struct Pair {
-        Key first = Key();
-        Value second = Value();
-        Pair(const Key& k, const Value& v) : first(k), second(v) {}
-    };
+    using PairKV = fl::Pair<Key, Value>;
 
-    typedef FixedVector<Pair, N> VectorType;
+    typedef FixedVector<PairKV, N> VectorType;
     typedef typename VectorType::iterator iterator;
     typedef typename VectorType::const_iterator const_iterator;
 
@@ -62,8 +68,8 @@ public:
         return end();
     }
 
-    template<typename LessThan>
-    iterator lowest(LessThan less_than = LessThan()) {
+    template<typename Less>
+    iterator lowest(Less less_than = Less()) {
         iterator lowest = end();
         for (iterator it = begin(); it != end(); ++it) {
             if (lowest == end() || less_than(it->first, lowest->first)) {
@@ -73,8 +79,8 @@ public:
         return lowest;
     }
 
-    template<typename LessThan>
-    const_iterator lowest(LessThan less_than = LessThan()) const {
+    template<typename Less>
+    const_iterator lowest(Less less_than = Less()) const {
         const_iterator lowest = end();
         for (const_iterator it = begin(); it != end(); ++it) {
             if (lowest == end() || less_than(it->first, lowest->first)) {
@@ -84,8 +90,8 @@ public:
         return lowest;
     }
 
-    template<typename LessThan>
-    iterator highest(LessThan less_than = LessThan()) {
+    template<typename Less>
+    iterator highest(Less less_than = Less()) {
         iterator highest = end();
         for (iterator it = begin(); it != end(); ++it) {
             if (highest == end() || less_than(highest->first, it->first)) {
@@ -95,8 +101,8 @@ public:
         return highest;
     }
 
-    template<typename LessThan>
-    const_iterator highest(LessThan less_than = LessThan()) const {
+    template<typename Less>
+    const_iterator highest(Less less_than = Less()) const {
         const_iterator highest = end();
         for (const_iterator it = begin(); it != end(); ++it) {
             if (highest == end() || less_than(highest->first, it->first)) {
@@ -131,15 +137,28 @@ public:
         return Value();
     }
 
-    bool insert(const Key& key, const Value& value) {
+    Pair<bool, iterator> insert(const Key& key, const Value& value, InsertResult* result = nullptr) {
         iterator it = find(key);
-        if (it == end()) {
-            if (data.size() < N) {
-                data.push_back(Pair(key, value));
-                return true;
+        if (it != end()) {
+            if (result) {
+                *result = InsertResult::kExists;
             }
+            // return false;
+            return {false, it};
         }
-        return false;
+        if (data.size() < N) {
+            data.push_back(PairKV(key, value));
+            if (result) {
+                *result = InsertResult::kInserted;
+            }
+            // return true;
+            return {true, data.end() - 1};
+        }
+        if (result) {
+            *result = InsertResult::kMaxSize;
+        }
+        //return false;
+        return {false, end()};
     }
 
     bool update(const Key& key, const Value& value, bool insert_if_missing = true) {
@@ -148,7 +167,7 @@ public:
             it->second = value;
             return true;
         } else if (insert_if_missing) {
-            return insert(key, value);
+            return insert(key, value).first;
         }
         return false;
     }
@@ -158,7 +177,7 @@ public:
         if (it != end()) {
             return it->second;
         }
-        data.push_back(Pair(key, Value()));
+        data.push_back(PairKV(key, Value()));
         return data.back().second;
     }
 
@@ -224,11 +243,16 @@ public:
     bool has(const Key& it) const {
         return find(it) != end();
     }
+
+    bool contains(const Key& key) const {
+        return has(key);
+    }
 private:
     VectorType data;
 };
 
-template <typename Key, typename Value, typename LessThan>
+
+template <typename Key, typename Value, typename Less = fl::DefaultLess<Key>>
 class SortedHeapMap {
 private:
     struct Pair {
@@ -240,7 +264,7 @@ private:
     };
 
     struct PairLess {
-        LessThan less;
+        Less less;
         bool operator()(const Pair& a, const Pair& b) const {
             return less(a.first, b.first);
         }
@@ -252,16 +276,63 @@ public:
 
     typedef typename SortedHeapVector<Pair, PairLess>::iterator iterator;
     typedef typename SortedHeapVector<Pair, PairLess>::const_iterator const_iterator;
+    typedef Pair value_type;
 
-    SortedHeapMap(size_t capacity, LessThan less = LessThan()) 
-        : data(capacity, PairLess{less}) {}
+    SortedHeapMap(Less less = Less()) 
+        : data(PairLess{less}) {
+    }
 
-    bool insert(const Key& key, const Value& value) {
-        return data.insert(Pair(key, value));
+    void setMaxSize(size_t n) {
+        data.setMaxSize(n);
+    }
+
+    void reserve(size_t n) {
+        data.reserve(n);
+    }
+
+    bool insert(const Key& key, const Value& value, InsertResult* result = nullptr) {
+        return data.insert(Pair(key, value), result);
+    }
+
+    void update(const Key& key, const Value& value) {
+        if (!insert(key, value)) {
+            iterator it = find(key);
+            it->second = value;
+        }
+    }
+
+    void swap(SortedHeapMap& other) {
+        data.swap(other.data);
+    }
+
+    Value& at(const Key& key) {
+        iterator it = find(key);
+        return it->second;
     }
 
     bool has(const Key& key) const {
         return data.has(Pair(key));
+    }
+
+    bool contains(const Key& key) const {
+        return has(key);
+    }
+
+    bool operator==(const SortedHeapMap& other) const {
+        if (size() != other.size()) {
+            return false;
+        }
+        for (const_iterator it = begin(), other_it = other.begin();
+             it != end(); ++it, ++other_it) {
+            if (it->first != other_it->first || it->second != other_it->second) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    bool operator!=(const SortedHeapMap& other) const {
+        return !(*this == other);
     }
 
     size_t size() const { return data.size(); }

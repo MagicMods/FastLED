@@ -1,9 +1,12 @@
+/// @file crgb.cpp
+/// Utility functions for the red, green, and blue (RGB) pixel struct
 
+#define FASTLED_INTERNAL
 #include "FastLED.h"
 #include "crgb.h"
 #include "lib8tion/math8.h"
 
-#include "namespace.h"
+#include "fl/namespace.h"
 
 FASTLED_NAMESPACE_BEGIN
 

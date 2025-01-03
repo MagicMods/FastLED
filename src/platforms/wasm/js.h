@@ -15,7 +15,7 @@
 #include "ui/ui_internal.h"
 #include "fl/str.h"
 #include "fl/engine_events.h"
-#include "namespace.h"
+#include "fl/namespace.h"
 #include "fl/screenmap.h"
 #include "fl/ptr.h"
 #include "active_strip_data.h"
@@ -44,7 +44,7 @@ EMSCRIPTEN_KEEPALIVE extern "C" int extern_setup();
 EMSCRIPTEN_KEEPALIVE extern "C" int extern_loop();
 
 
-FASTLED_NAMESPACE_BEGIN
+namespace fl {
 
 
 class jsSlider {
@@ -157,6 +157,7 @@ class jsButton {
         bool clickedHappened = mPressed && (mPressed != mPressedLast);
         return mClickedHappened;
     }
+    int clickedCount() const { return mClickedCount; }
     operator bool() const { return clicked(); }
     const fl::Str& groupName() const { return mGroup; }
 
@@ -170,6 +171,9 @@ class jsButton {
         void onPlatformPreLoop2() override {
             mOwner->mClickedHappened = mOwner->mPressed && (mOwner->mPressed != mOwner->mPressedLast);
             mOwner->mPressedLast = mOwner->mPressed;
+            if (mOwner->mClickedHappened) {
+                mOwner->mClickedCount++;
+            }
         }
         jsButton *mOwner = nullptr;
     };
@@ -182,6 +186,7 @@ class jsButton {
     bool mPressed = false;
     bool mPressedLast = false;
     bool mClickedHappened = false;
+    int mClickedCount = 0;
     fl::Str mGroup;
 };
 
@@ -234,12 +239,12 @@ void updateJs(const char* jsonStr);
 #define FASTLED_HAS_UI_TITLE 1
 #define FASTLED_HAS_UI_DESCRIPTION 1
 
-typedef jsNumberField NumberField;
-typedef jsSlider Slider;
-typedef jsCheckbox Checkbox;
-typedef jsButton Button;
-typedef jsTitle Title;
-typedef jsDescription Description;
+typedef jsNumberField UINumberField;
+typedef jsSlider UISlider;
+typedef jsCheckbox UICheckbox;
+typedef jsButton UIButton;
+typedef jsTitle UITitle;
+typedef jsDescription UIDescription;
 
 
-FASTLED_NAMESPACE_END
+}  // namespace fl

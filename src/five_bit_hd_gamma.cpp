@@ -1,4 +1,5 @@
-
+/// @file five_bit_hd_gamma.cpp
+/// Defines functions for five-bit gamma correction
 
 #define FASTLED_INTERNAL 1
 #include "five_bit_hd_gamma.h"
@@ -9,7 +10,7 @@
 #include "lib8tion/math8.h"
 #include "lib8tion/scale8.h"
 #include "lib8tion/brightness_bitshifter.h"
-#include "namespace.h"
+#include "fl/namespace.h"
 
 
 // Author: Zach Vorhies

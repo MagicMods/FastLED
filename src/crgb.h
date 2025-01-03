@@ -1,10 +1,12 @@
+/// @file crgb.h
+/// Defines the red, green, and blue (RGB) pixel struct
 
 #pragma once
 
 #include <stdint.h>
 
 #include "chsv.h"
-#include "namespace.h"
+#include "fl/namespace.h"
 #include "color.h"
 #include "lib8tion/types.h"
 #include "fl/force_inline.h"
@@ -741,6 +743,8 @@ FASTLED_FORCE_INLINE CRGB operator*( const CRGB& p1, uint8_t d);
 
 /// Scale using CRGB::nscale8_video()
 FASTLED_FORCE_INLINE CRGB operator%( const CRGB& p1, uint8_t d);
+
+/// @} PixelTypes
 
 
 FASTLED_NAMESPACE_END

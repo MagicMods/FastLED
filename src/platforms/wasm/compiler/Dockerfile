@@ -131,21 +131,14 @@ RUN pio settings set enable_telemetry 0
 # This is by far the most expensive part of the build, because platformio needs to download initial tools. This
 # pre-warm cycle is "sticky" and tends to stay in the cache for a long time since docker is very relaxed about
 # invalidating cache layers that clone a github repo.
-RUN git clone https://github.com/fastled/FastLED.git --depth 1 /git/fastled && \
-    mkdir -p /js/fastled && rm -rf /git/fastled/.git && \
-    rsync -a /git/fastled/ /js/fastled/ && rm -rf /git/fastled
 
-# Set up the entrypoint script
-RUN echo '#!/bin/bash' > /entrypoint.sh && \
-    echo 'source /emsdk/emsdk_env.sh' >> /entrypoint.sh && \
-    echo 'python /js/init_runtime.py' >> /entrypoint.sh && \
-    echo 'exec "$@"' >> /entrypoint.sh && \
-    chmod +x /entrypoint.sh
-    
+RUN git clone https://github.com/fastled/FastLED.git --depth 1 /git/fastled && \
+    mkdir -p /js/fastled && \
+    rsync -a /git/fastled/ /js/fastled/ --exclude='.git'
+
 # Create symlinks for wasm platform files.
 COPY src/platforms/wasm/compiler/init_runtime.py /js/init_runtime.py
-
-
+COPY src/platforms/wasm/compiler/prewarm.sh /js/prewarm.sh
 
 WORKDIR /js
 
@@ -153,6 +146,7 @@ ARG NO_PREWARM=0
 ENV NO_PREWARM=${NO_PREWARM}
 
 RUN python /js/init_runtime.py || true
+
 
 # First pre-warm cycle - always do it as part of the build.
 RUN mkdir -p /logs
@@ -165,13 +159,13 @@ RUN rm -rf /trash
 # Do not cause the build to fail because the cached pre-warm failed.
 RUN /js/prewarm.sh --force > /logs/prewarm.log.1 || true
 
-COPY *.json /host/fastled/
 
 # Copy the fastled repo from the host machine and prepare for pre-warm
 # Make sure and delete files that have been removed so that we don't get
 # duplicate symbols from stale files.
 COPY *.json /host/fastled/
 COPY src/*.* /host/fastled/src/
+COPY examples /host/fastled/examples
 COPY src/fx /host/fastled/src/fx
 COPY src/fl /host/fastled/src/fl
 COPY src/lib8tion /host/fastled/src/lib8tion
@@ -179,14 +173,19 @@ COPY src/third_party /host/fastled/src/third_party
 COPY src/sensors /host/fastled/src/sensors
 COPY src/platforms /host/fastled/src/platforms
 
+COPY src/platforms/wasm/compiler/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh && dos2unix /entrypoint.sh
+
 # now sync local to the source directory.
-RUN rsync -av --delete /host/fastled/src/ /js/fastled/src/ && rm -rf /host/fastled
+RUN rsync -av /host/fastled/ /js/fastled/ && rm -rf /host/fastled
 
 
 # SECOND PRE-WARM CYCLE: Copy the fastled repo from the host machine and pre-warm the cache with that compilation. This will
 # be much quicker than the first pre-warm cycle.
 RUN /js/prewarm.sh  > /logs/prewarm.log.2
 
+# Now timestamp the image and store it at the end of the build.
+RUN date > /image_timestamp.txt
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["python", "/js/run.py", "server"]

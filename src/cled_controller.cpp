@@ -1,4 +1,5 @@
-
+/// @file cled_controller.cpp
+/// base definitions used by led controllers for writing out led data
 
 #define FASTLED_INTERNAL
 #include "FastLED.h"
@@ -25,6 +26,7 @@ void CLEDController::clearLedDataInternal(int nLeds) {
         nLeds = (nLeds > m_nLeds) ? m_nLeds : nLeds;
         memset((void*)m_Data, 0, sizeof(struct CRGB) * nLeds);
     }
+
 }
 
 ColorAdjustment CLEDController::getAdjustmentData(uint8_t brightness) {

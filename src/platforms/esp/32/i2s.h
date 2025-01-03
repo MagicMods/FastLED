@@ -1,7 +1,7 @@
 #pragma once
 #include <stdint.h>
 
-#include "namespace.h"
+#include "fl/namespace.h"
 
 
 
@@ -74,7 +74,6 @@ struct DMABuffer {
 
 extern int gCurBuffer;
 extern bool gDoneFilling;
-extern int gCntBuffer;
 extern uint8_t gPixelRow[NUM_COLOR_CHANNELS][32];
 extern uint8_t gPixelBits[NUM_COLOR_CHANNELS][8][4];
 extern DMABuffer *dmaBuffers[NUM_DMA_BUFFERS];;
@@ -110,3 +109,6 @@ void i2s_setup_pin(int pin, int offset);
 void i2s_transpose_and_encode(int channel, uint32_t has_data_mask, volatile uint32_t *buf);
 
 FASTLED_NAMESPACE_END
+
+
+#include "i2s.hpp"  // define the i2s.h functions/data. This is used to support Arduino IDE which doesn't have build defines.

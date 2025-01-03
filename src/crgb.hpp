@@ -1,3 +1,5 @@
+/// @file crgb.hpp
+/// Defines utility functions for the red, green, and blue (RGB) pixel struct
 
 #pragma once
 
@@ -5,7 +7,7 @@
 #include "chsv.h"
 #include "crgb.h"
 #include "lib8tion.h"
-#include "namespace.h"
+#include "fl/namespace.h"
 #include "fl/force_inline.h"
 #include "fl/str.h"
 
