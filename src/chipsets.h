@@ -749,7 +749,6 @@ class DP1903Controller800Khz : public ClocklessController<DATA_PIN, 2 * FMUL, 8 
 template <uint8_t DATA_PIN, EOrder RGB_ORDER = RGB>
 class DP1903Controller400Khz : public ClocklessController<DATA_PIN, 4 * FMUL, 16 * FMUL, 4 * FMUL, RGB_ORDER> {};
 
-
 /// SK6822 controller class.
 /// @copydetails WS2812Controller800Khz
 template <uint8_t DATA_PIN, EOrder RGB_ORDER = RGB>
@@ -847,6 +846,10 @@ class UCS1912Controller : public ClocklessController<DATA_PIN, 2 * FMUL, 8 * FMU
 #define FASTLED_LED_OVERCLOCK_WS2813 FASTLED_LED_OVERCLOCK
 #endif
 
+#ifndef FASTLED_LED_OVERCLOCK_WS2818
+#define FASTLED_LED_OVERCLOCK_WS2818 FASTLED_LED_OVERCLOCK
+#endif
+
 #ifndef FASTLED_LED_OVERCLOCK_WS2815
 #define FASTLED_LED_OVERCLOCK_WS2815 FASTLED_LED_OVERCLOCK
 #endif
@@ -909,7 +912,6 @@ class UCS1912Controller : public ClocklessController<DATA_PIN, 2 * FMUL, 8 * FMU
 //  print("T1: ", T1)
 //  print("T2: ", T2)
 //  print("T3: ", T3)
-
 
 // GE8822 - 350ns 660ns 350ns
 template <uint8_t DATA_PIN, EOrder RGB_ORDER = RGB>
@@ -1019,8 +1021,6 @@ class WS2818Controller : public ClocklessController<
 	C_NS_WS2818(FASTLED_WS2818_T3), 
 	RGB_ORDER> {};
 
-
-// 750NS, 750NS, 750NS
 template <uint8_t DATA_PIN, EOrder RGB_ORDER = RGB>
 class TM1803Controller400Khz : public ClocklessController<DATA_PIN, C_NS(700), C_NS(1100), C_NS(700), RGB_ORDER> {};
 

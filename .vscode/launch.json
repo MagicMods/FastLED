@@ -9,14 +9,20 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python Debugger: Current File",
-            "type": "debugpy",
+            "type": "platformio-debug",
             "request": "launch",
-            "program": "",
-            "console": "integratedTerminal"
+            "name": "PIO Debug",
+            "executable": "c:/Data/Svibe/Svibe_Firmware/LibMod/FastLED/.pio/build/dev/firmware.elf",
+            "projectEnvName": "dev",
+            "toolchainBinDir": "C:/Users/Rs/.platformio/packages/toolchain-riscv32-esp/bin",
+            "internalConsoleOptions": "openOnSessionStart",
+            "preLaunchTask": {
+                "type": "PlatformIO",
+                "task": "Pre-Debug"
+            }
         },
         {
-            "type": "by-gdb",
+            "type": "platformio-debug",
             "request": "launch",
             "name": "Launch(gdb)",
             "program": "tests/.build/bin/",
